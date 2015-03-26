@@ -1,3 +1,10 @@
+## Update 20150205 changes by kmerkens to identify kogia signals on xwav data with 320kHz sampling rate
+-Created files: 
+	cat_all_mats.m (to combine the .mat files output from cat_click_times.m to get overall summary statistics and 			make plots of the detections from the entire deployment)
+	cat_click_times.m (take all the .mat output files from the detector and produce one .mat with all of the 				parameters concatenated for that directory, and to calculate the actual times of the clicks (relative 			to the baby jesus).  Also can generate one set of plots for each encounter. Saves one summary .			mat and one long list of start/end times as .xls
+	guidedDetection.m (Added to increase efficiency and accuracy by only running detector over xwav files 			spanned by a previously defined "detection", requires .xls input file, with start/end times of 				encounters formatted as numbers. Called by dFind_xwavs.
+	plotClickEncounters_150310.m (Generates plots of clicks according to encounter start/end times, as long as 			the encounter is contained within one .xwav. (so, it's mostly useless))
+	plotClickEncounters_posthoc_150310.m (Generates a set of plots for each encounter, even if they 		span multiple xwavs. Called by cat_clicks_mat.m for plotting after the detector has been run.
 ## Update 20150123 changes by kmerkens to identify Kogia spp signals on data from 200kHz sampling rate.
 -de_detector.m
 	line 25 - added tic
