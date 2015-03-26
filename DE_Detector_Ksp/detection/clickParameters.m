@@ -93,6 +93,18 @@ for c = 1:size(clicks,1)
     specClickTf{c} = spClickSub(specRange)'+PtfN;
     % specNoiseTf{c} = spNoiseSub(specRange)'+PtfN;
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % calculate peak click frequency
+    % max value in the first half samples of the spectrogram
+    
+    [valMx, posMx] = max(specClickTf{c}(1:end-1)); % ignore last point - bandpass issue
+    peakFr(c) = f(posMx); %peak frequency in kHz
+    
+    if peakFr(c) < p.cutPeakBelowKHz || peakFr(c) > p.cutPeakAboveKHz
+        validClicks(c) = 0;
+        continue
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %calculate RLpp at peak frequency: find min/max value of timeseries,
     %convert to dB, add transfer function value of peak frequency (should come
@@ -237,18 +249,7 @@ for c = 1:size(clicks,1)
         continue
     end
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % calculate peak click frequency
-    % max value in the first half samples of the spectrogram
     
-    [valMx, posMx] = max(specClickTf{c}(1:end-1)); % ignore last point - bandpass issue
-    peakFr(c) = f(posMx); %peak frequency in kHz
-    
-    if peakFr(c) < p.cutPeakBelowKHz || peakFr(c) > p.cutPeakAboveKHz
-        validClicks(c) = 0;
-        continue
-    end
     
     
     
@@ -298,7 +299,8 @@ for c = 1:size(clicks,1)
 end
 
 
-
+%%%%Now doing this above, after each step, to save calculating all
+%%%%parameters for each click if they don't meet one of the thresholds
 % validClicks = ones(size(ppSignal));
 % 
 % % Check parameter values for each click

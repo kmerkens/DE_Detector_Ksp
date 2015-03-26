@@ -1,3 +1,33 @@
+## Update 20150123 changes by kmerkens to identify Kogia spp signals on data from 200kHz sampling rate.
+-de_detector.m
+	line 25 - added tic
+	lines 27-30 added my path to tf file
+	line 38  to my basedir
+	line 45 to Tinian
+	line 54 uncommented indisk…
+	lines 73, 74 added “done low res” time elapsed toc
+	line 85 added toc
+-dLoad_HRsettings.m
+	line 45 added 3 parameters for kogia click id, to be used in clickParameters.m
+		parametersHR.localminbottom = 63; %Frequency above which will be checked for local min                                         parametersHR.localmintop = 90; %Frequency below which will be checked for local min.                                              parametersHR.localminThr = 68; %Frequency above which a local minimum must exist in order 			to be thrown out.  If the min is below, the click will be kept            
+	Multiple parameters changed for Ksp. see comments in file
+-dLoad_STsettings.m    
+	Multiple parameters changed for Ksp. see comments in file            
+- clickParameters
+	Throughout - if clicks did not meet a critera, they were eliminated and the code moved on to the next click to 		save time (kfrasier's orinal calculated all parameters, and then checked them at the end)
+	line 50 added validClicks = ones(size(ppSignal));
+	added sections to do the ffollowing to retain kogia clicks
+		-Use the ratio of the median energy near 75 and 97kHz as a cutoff
+		-Use the ratio of the median energy near 55 kHz and 70 kHz as a cutoff
+		-check for local minimum between 60 and 90 kHz
+-dt_highres_click batch
+	line 49 commented out message
+	line 50 added toc
+-dHR_expand_region
+	lines 9-14 added check for curve_fitting_toolbox, and use fastsmooth
+
+
+
 ## Update 11/21/2014
 Detector has been updated to accept .wav files in addition to x.wavs.
 If you run the detector on directories of wav files, it will look for file start time information in the file name.
