@@ -26,6 +26,8 @@ durClick =  zeros(size(clicks,1),1);
 bw3db = zeros(size(clicks,1),3);
 yNFilt = [];
 yFilt = cell(size(clicks,1),1);
+zerosvec = zeros(1,300);
+yFilt(:) = {zerosvec};
 specClickTf = cell(size(clicks,1),1);
 yFiltBuff = cell(size(clicks,1),1);
 specNoiseTf = cell(size(clicks,1),1);
@@ -52,7 +54,8 @@ validClicks = ones(size(ppSignal));
 for c = 1:size(clicks,1)
     % Pull out band passed click timeseries
     yFiltBuff{c} = wideBandData(max(clicks(c,1)-buffVal,1):min(clicks(c,2)+buffVal,size(wideBandData,2)));
-    yFilt{c} = wideBandData(clicks(c,1):clicks(c,2));
+    yFiltLength = clicks(c,2)-clicks(c,1)+1;
+    yFilt{c,1}(1:yFiltLength) = wideBandData(clicks(c,1):clicks(c,2));
     %convert  timeseries into counts
     if strcmp(hdr.fType, 'xwav')
         click = yFilt{c}*2^14;
@@ -94,6 +97,7 @@ for c = 1:size(clicks,1)
     % specNoiseTf{c} = spNoiseSub(specRange)'+PtfN;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     % calculate peak click frequency
     % max value in the first half samples of the spectrogram
     
@@ -104,6 +108,8 @@ for c = 1:size(clicks,1)
         validClicks(c) = 0;
         continue
     end
+    
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %calculate RLpp at peak frequency: find min/max value of timeseries,
@@ -136,6 +142,7 @@ for c = 1:size(clicks,1)
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%Not necessary for 320Khz Data
     %Use the ratio of the median energy near 75 and 97kHz as a cutoff,
     %throwing out clicks with too low a ratio (that means there's too much
     %energy at lower frequencies/likely a click lower down)
@@ -154,6 +161,7 @@ for c = 1:size(clicks,1)
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%Not necessary for 320Khz Data
     %Use the ratio of the median energy near 55 kHz and 70 kHz as a cutoff
     %- if it's lower than 1.15, throw the click out. 
     %identify the bins that will be used to find the low and high values
@@ -173,6 +181,7 @@ for c = 1:size(clicks,1)
     end
     
      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%Not necessary for 320Khz Data
     %check for local minimum between 60 and 90 kHz, and if it exists closer
     %to 90, the click is not valid (likely dsp).
     %Find the bins that match the frequencies 60-80 kHz
@@ -252,7 +261,6 @@ for c = 1:size(clicks,1)
     
     
     
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Calculate duration
     durClick(c) = clicks(c,2)-clicks(c,1);
@@ -299,8 +307,7 @@ for c = 1:size(clicks,1)
 end
 
 
-%%%%Now doing this above, after each step, to save calculating all
-%%%%parameters for each click if they don't meet one of the thresholds
+
 % validClicks = ones(size(ppSignal));
 % 
 % % Check parameter values for each click

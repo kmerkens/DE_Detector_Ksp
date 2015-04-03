@@ -55,9 +55,13 @@ inDisk = fileparts(baseDir(1:3));
 
 % Build list of (x)wav names in the base directory.
 % Right now only wav and xwav files are looked for.
-[detFiles]= dFind_xwavs(baseDir,depl); % doesn't read in manual detection 
-% files in this version, but this can be added pretty easily, using an
-% older version.
+
+guideDetector = 1; %1 if using xls sheet to guide detection, 0 to run on all files in drive
+
+[detFiles,encounterTimes,GraphDir]= dFind_xwavs(baseDir,depl,guideDetector);
+
+
+
 
 viewPath = {metaDir, baseDir};
 [fullFiles,fullLabels] = get_fileset(baseDir,metaDir,detFiles); % returns a list of files to scan through
@@ -79,7 +83,8 @@ if ~isempty(detFiles)
         % load settings
         parametersHR = dLoad_HRsettings;
         % run detector
-        dHighres_click_batch(fullFiles,fullLabels,baseDir,parametersHR,viewPath,tfFullFile)
+        dHighres_click_batch(fullFiles,fullLabels,baseDir,parametersHR,...
+            viewPath,tfFullFile,encounterTimes,guideDetector,GraphDir)
         display('Done with high-res detector')
     end
 end

@@ -1,10 +1,20 @@
-## Update 20150205 changes by kmerkens to identify kogia signals on xwav data with 320kHz sampling rate
--Created files: 
-	cat_all_mats.m (to combine the .mat files output from cat_click_times.m to get overall summary statistics and 			make plots of the detections from the entire deployment)
-	cat_click_times.m (take all the .mat output files from the detector and produce one .mat with all of the 				parameters concatenated for that directory, and to calculate the actual times of the clicks (relative 			to the baby jesus).  Also can generate one set of plots for each encounter. Saves one summary .			mat and one long list of start/end times as .xls
-	guidedDetection.m (Added to increase efficiency and accuracy by only running detector over xwav files 			spanned by a previously defined "detection", requires .xls input file, with start/end times of 				encounters formatted as numbers. Called by dFind_xwavs.
-	plotClickEncounters_150310.m (Generates plots of clicks according to encounter start/end times, as long as 			the encounter is contained within one .xwav. (so, it's mostly useless))
-	plotClickEncounters_posthoc_150310.m (Generates a set of plots for each encounter, even if they 		span multiple xwavs. Called by cat_clicks_mat.m for plotting after the detector has been run.
+
+
+
+
+## Update 20150205 changes by kmerkens to identify kogia signals - additions from 320 kHz data analysis, particularly guided detector
+
+-Added files: 
+	cat_all_mats.m (to combine the .mat files output from cat_click_times.m to get overall summary statistics and make plots of the detections from the entire deployment)
+	cat_click_times.m (take all the .mat output files from the detector and produce one .mat with all of the parameters concatenated for that directory, and to calculate the actual times of the clicks (relative to the baby jesus).  Also can generate one set of plots for each encounter. Saves one summary .mat and one long list of start/end times as .xls
+	guidedDetection.m (Added to increase efficiency and accuracy by only running detector over xwav files spanned by a previously defined "detection", requires .xls input file, with start/end times of encounters formatted as numbers. Called by dFind_xwavs.
+	plotClickEncounters_150310.m (Generates plots of clicks according to encounter start/end times, as long as the encounter is contained within one .xwav. (so, it's mostly useless))
+	plotClickEncounters_posthoc_150310.m (Generates a set of plots for each encounter, even if they span multiple xwavs. Called by cat_clicks_mat.m for plotting after the detector has been run.
+
+Updates throughout to deal with guided detector. 
+
+
+
 ## Update 20150123 changes by kmerkens to identify Kogia spp signals on data from 200kHz sampling rate.
 -de_detector.m
 	line 25 - added tic
@@ -16,12 +26,14 @@
 	line 85 added toc
 -dLoad_HRsettings.m
 	line 45 added 3 parameters for kogia click id, to be used in clickParameters.m
-		parametersHR.localminbottom = 63; %Frequency above which will be checked for local min                                         parametersHR.localmintop = 90; %Frequency below which will be checked for local min.                                              parametersHR.localminThr = 68; %Frequency above which a local minimum must exist in order 			to be thrown out.  If the min is below, the click will be kept            
+		parametersHR.localminbottom = 63; %Frequency above which will be checked for local min                                         
+		parametersHR.localmintop = 90; %Frequency below which will be checked for local min.                                              
+		parametersHR.localminThr = 68; %Frequency above which a local minimum must exist in order to be thrown out.  If the min is below, the click will be kept            
 	Multiple parameters changed for Ksp. see comments in file
 -dLoad_STsettings.m    
 	Multiple parameters changed for Ksp. see comments in file            
 - clickParameters
-	Throughout - if clicks did not meet a critera, they were eliminated and the code moved on to the next click to 		save time (kfrasier's orinal calculated all parameters, and then checked them at the end)
+	Throughout - if clicks did not meet a critera, they were eliminated and the code moved on to the next click to save time (kfrasier's orinal calculated all parameters, and then checked them at the end)
 	line 50 added validClicks = ones(size(ppSignal));
 	added sections to do the ffollowing to retain kogia clicks
 		-Use the ratio of the median energy near 75 and 97kHz as a cutoff

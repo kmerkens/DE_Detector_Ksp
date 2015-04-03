@@ -6,7 +6,7 @@ parametersST.buff = 500; % # of buffer samples to add on either side of area of 
 parametersST.chan = 1; % which channel do you want to look at?
 
 parametersST.fRanges = [50000 99000]; 
-parametersST.thresholds = 13500; % Amplitude threshold in counts. 
+parametersST.thresholds = 3500; % Amplitude threshold in counts. 
 % For predictability, keep this consistent between low and hi res steps.
 
 parametersST.frameLengthSec = .01; %Used for calculating fft size

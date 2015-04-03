@@ -34,10 +34,12 @@ parametersHR.cutPeakBelowKHz = 80; % discard click if peak frequency below X kHz
 parametersHR.cutPeakAboveKHz = 99.9; % discard click if peak frequency above Y kHz 
 parametersHR.minClick_us = 25;% Minimum duration of a click in us 
 parametersHR.maxClick_us = 1000; % Max duration of a click including echos
-parametersHR.maxNeighbor = 1; % max time in seconds allowed between neighboring 
+% parametersHR.maxNeighbor = 1; % max time in seconds allowed between neighboring 
 % clicks. Clicks that are far from neighbors can be rejected using this parameter,
 % good for dolphins in noisy environments because lone clicks or pairs of
 % clicks are likely false positives
+parametersHR.maxNeighbor = 2; %Increased, to get faint kogia detections. 
+
 
 parametersHR.mergeThr = 50;% min gap between energy peaks in us. Anything less
 % will be merged into one detection the beginning of the next is fewer

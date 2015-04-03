@@ -1,4 +1,5 @@
-function dHighres_click_batch(fullFiles,fullLabels,inDisk,p,viewPath,tfFullFile)
+function dHighres_click_batch(fullFiles,fullLabels,inDisk,p,viewPath,...
+    tfFullFile,encounterTimes,guideDetector,GraphDir)
 
 N = length(fullFiles);
 previousFs = 0; % make sure we build filters on first pass
@@ -51,7 +52,8 @@ for idx1=1:N; % for each data file
     
     % Run post processing to remove rogue loner clicks, prior to writing
     % the remaining output files.
-    delFlag = clickInlinePProc(fullLabels{idx1},clickTimes,p);
+    delFlag = clickInlinePProc(fullLabels{idx1},clickTimes,p,encounterTimes,...
+        guideDetector,hdr);
     delIdx = find(delFlag==1);
     
     % save a mat file now, rather than recalculating later
@@ -77,4 +79,17 @@ for idx1=1:N; % for each data file
     save(strcat(fullLabels{idx1}(1:end-2),'.mat'),'clickTimes','ppSignal',...
         'durClick','f','hdr','nDur','deltaEnv',...
         'yFilt','specClickTf', 'peakFr','-mat','yFiltBuff');%
+    
+    % Make plots of each encounter's click parameters, now that all extra
+    % clicks have been removed. Save those to a directory.
+    if guideDetector == 1
+        plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
+            durClick,specClickTf,peakFr,nDur,yFilt,hdr,GraphDir);
+    end
 end
+    
+
+    
+    
+    
+    
