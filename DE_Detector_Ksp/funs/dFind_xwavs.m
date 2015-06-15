@@ -27,6 +27,7 @@ else
             folderNames = [folderNames; char(folders(keep(fidx)).name)];
         end
     end
+    GraphDir = 0;
 
 
     % Pull out x.wav files from all folders, combine full paths into one long list

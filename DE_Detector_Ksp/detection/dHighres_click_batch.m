@@ -40,7 +40,7 @@ for idx1=1:N; % for each data file
     
     % Look for clicks, hand back parameters of retained clicks
     [clickTimes,ppSignalVec,durClickVec,~,~,yFiltVec,...
-        specClickTfVec, ~, peakFrVec,yFiltBuffVec,f,deltaEnvVec,nDurVec]...
+        specClickTfVec,specNoiseTfVec,peakFrVec,yFiltBuffVec,f,deltaEnvVec,nDurVec]...
         = dProcess_HR_starts(fid, wideBandFilter,starts,stops,channel,...
         xfrOffset,specRange,p,hdr,fullFiles{idx1},fftWindow,fullLabels{idx1});
     
@@ -63,7 +63,7 @@ for idx1=1:N; % for each data file
     % bw3db = bw3dbVec(delIdx,:);
     % yNFilt = yNFiltVec;
     specClickTf = specClickTfVec(delIdx,:);
-    % specNoiseTf = specNoiseTfVec(delIdx,:);
+    specNoiseTf = specNoiseTfVec(delIdx,:);
     peakFr = peakFrVec(delIdx,:);
     deltaEnv = deltaEnvVec(delIdx,:);
     nDur = nDurVec(delIdx,:);
@@ -77,14 +77,14 @@ for idx1=1:N; % for each data file
     end
     
     save(strcat(fullLabels{idx1}(1:end-2),'.mat'),'clickTimes','ppSignal',...
-        'durClick','f','hdr','nDur','deltaEnv',...
-        'yFilt','specClickTf', 'peakFr','-mat','yFiltBuff');%
+        'durClick','f','hdr','nDur','deltaEnv','yFilt','specClickTf',...
+        'specNoiseTf','peakFr','-mat','yFiltBuff');%
     
     % Make plots of each encounter's click parameters, now that all extra
     % clicks have been removed. Save those to a directory.
     if guideDetector == 1
         plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
-            durClick,specClickTf,peakFr,nDur,yFilt,hdr,GraphDir);
+            durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
     end
 end
     

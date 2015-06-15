@@ -1,6 +1,12 @@
-% cat_click_times.m
-% Could turn this into a function and instert at the end of de_detector.m
-% function cat_click_times(inDir)
+% cat_click_times.m Code to take all the .mat output files from the
+% detector and produce one .mat with all of the parameters concatenated for
+% that directory, and to calculate the actual times of the clicks (relative
+% to the baby jesus).  Also can call the plotting code to generate one set
+% of plots for each encounter (not separated by .xwav file), unless the
+% bottom section is commented out.
+% Saves one summary .mat and one long list of start/end times as .xls (and
+% plots, if requested)
+
 
 %Set sampling frequency, in Hz
 fs = 200000;
@@ -15,6 +21,7 @@ nDurcon = [];
 peakFrcon = [];
 ppSignalcon = [];
 specClickTfcon = [];
+specNoiseTfcon = [];
 yFiltcon = [];
 
 sec2dnum = 60*60*24; % conversion factor to get from seconds to matlab datenum
@@ -24,7 +31,7 @@ for i1 = 1:length(matList)
     clickDnumTemp = [];
     % only need to load hdr and click times
     load(fullfile(inDir,matList(i1).name),'hdr','clickTimes', 'durClick', ...
-        'nDur', 'peakFr','ppSignal','specClickTf','yFilt')
+        'nDur', 'peakFr','ppSignal','specClickTf','specNoiseTf','yFilt','f')
     if ~isempty(clickTimes)
     % determine true click times
         clickDnumTemp = (clickTimes./sec2dnum) + hdr.start.dnum + datenum([2000,0,0]);
@@ -34,6 +41,7 @@ for i1 = 1:length(matList)
         peakFrcon = [peakFrcon; peakFr];
         ppSignalcon = [ppSignalcon; ppSignal];
         specClickTfcon = [specClickTfcon; specClickTf];
+        specNoiseTfcon = [specNoiseTfcon; specNoiseTf];
         yFiltcon = [yFiltcon; yFilt];
         % write label file:
         clickTimeRel = zeros(size(clickDnumTemp));
@@ -83,7 +91,6 @@ xlswrite([inDir,'\',choppedDir{3},'_ClicksOnlyConcatCHAR',filedate,'.xls'],click
 %%%not speparted by xwav. 
 
 %Get detectionTimes
-
 %get excel file to read
 [infile,inpath]=uigetfile('*.xls','Select .xls file to guide encounters');
 if isequal(infile,0)
@@ -116,6 +123,7 @@ guideDetector = 1;
 ppSignal = ppSignalcon;
 durClick = durClickcon;
 specClickTf = specClickTfcon;
+specNoiseTf = specNoiseTfcon;
 peakFr = peakFrcon;
 nDur = nDurcon;
 yFilt = yFiltcon;
@@ -123,13 +131,14 @@ GraphDir = 'E:\metadata\matlab_graphs';
 
 
 [medianValues,meanSpecClicks,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,clickTimes,ppSignal,durClick,...
-    specClickTf,peakFr,nDur,yFilt,hdr,GraphDir,fs);
+    specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs);
 
 
 %Then save everything
 save([inDir,'\',choppedDir{3},'_ClicksOnlyConcat',filedate,'.mat'],...
     'clickDnum','durClickcon','nDurcon', 'peakFrcon','ppSignalcon',...
-    'specClickTfcon','yFiltcon','medianValues','meanSpecClicks','iciEncs')
+    'specClickTfcon','yFiltcon','medianValues','meanSpecClicks','iciEncs','f')
+
 
 
 

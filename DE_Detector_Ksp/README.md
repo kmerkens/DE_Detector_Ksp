@@ -1,4 +1,4 @@
-
+## Update 20150615 changes by kmerkens to correctly filter and calculate noise spectra. Made files consistent with changes in versions for 320kHz data and .wav data.
 
 
 

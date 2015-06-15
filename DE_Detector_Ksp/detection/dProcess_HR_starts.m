@@ -11,7 +11,7 @@ bw3dbVec = [];
 yNFiltVec = [];
 yFiltVec = cell(5E6,1);
 specClickTfVec = cell(5E6,1);
-specNoiseTfVec = [];
+specNoiseTfVec = cell(5E6,1);
 peakFrVec = nan(5E6,1);
 yFiltBuffVec = cell(5E6,1);
 deltaEnvVec = nan(5E6,1);
@@ -34,7 +34,15 @@ for k = 1:numStarts % stepping through using the start/end points
     % Compute energy of band passed data
     energy = wideBandData.^2;
     % Look for click candidates
-    [clicks, noise] = dHighres_click(p, hdr, energy, wideBandData);
+    [clicks, noises] = dHighres_click(p, hdr, energy, wideBandData);
+    
+    %Added in the unusual circumstance where there isn't enough room between
+    %multiple clicks to allow taking another noise sample. So, repeat the
+    %original noise sample to correspond to the second click.
+    if ~isequal(size(clicks,1), size(noises,1));
+        numclicks = size(clicks,1);
+        noises = repmat(noises,numclicks,1);
+    end
     
     if ~ isempty(clicks)
         % if we're in here, it's because we detected one or more possible
@@ -47,8 +55,8 @@ for k = 1:numStarts % stepping through using the start/end points
         clicks = clicks(validClicks==1,:);
         
         % Compute click parameters to decide if the detection should be kept
-        [clickInd,ppSignal,durClick,~,~,yFilt,specClickTf,~,peakFr,yFiltBuff,...
-            f,deltaEnv,nDur] = clickParameters(noise,wideBandData,p,...
+        [clickInd,ppSignal,durClick,~,~,yFilt,specClickTf,specNoiseTf,peakFr,yFiltBuff,...
+            f,deltaEnv,nDur] = clickParameters(noises,wideBandData,p,...
             fftWindow,xfrOffset,clicks,specRange,hdr);
         
         if ~isempty(clickInd)
@@ -64,7 +72,7 @@ for k = 1:numStarts % stepping through using the start/end points
             % yNFiltVec = [yNFiltVec;yNFilt];
             yFiltVec(sIdx:eIdx,:)= yFilt';
             specClickTfVec(sIdx:eIdx,1) = specClickTf';
-            % specNoiseTfVec = [specNoiseTfVec;specNoiseTf'];
+            specNoiseTfVec(sIdx:eIdx,1) = specNoiseTf';
             peakFrVec(sIdx:eIdx,1) = peakFr;
             yFiltBuffVec(sIdx:eIdx,:) = yFiltBuff';
             deltaEnvVec(sIdx:eIdx,1) = deltaEnv;
@@ -85,6 +93,7 @@ ppSignalVec = ppSignalVec(1:eIdx,:);
 durClickVec = durClickVec(1:eIdx,:);
 yFiltVec = yFiltVec(1:eIdx,:);
 specClickTfVec = specClickTfVec(1:eIdx,:);
+specNoiseTfVec = specNoiseTfVec(1:eIdx,:);
 peakFrVec = peakFrVec(1:eIdx,:);
 yFiltBuffVec = yFiltBuffVec(1:eIdx,:);
 deltaEnvVec = deltaEnvVec(1:eIdx,:);

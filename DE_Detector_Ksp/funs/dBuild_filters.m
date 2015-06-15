@@ -6,7 +6,11 @@ function [previousFs,fftSize,fftWindow,binWidth_Hz,freq_kHz,...
 
 % ToDo: change to IIR filters for speed?
 
-wideBandFilter = spBuildEquiRippleFIR(p.bpRanges, [0, 1], 'Fs', fs);
+% wideBandFilter = spBuildEquiRippleFIR(p.bpRanges, [0, 1], 'Fs', fs);
+% previousFs = fs;
+N = 12;
+[b,a] = butter(N/2, [p.bpRanges(1) p.bpRanges(2)]/(fs/2),'bandpass'); 
+wideBandFilter = [b;a];
 previousFs = fs;
 
 fftSize = ceil(fs * p.frameLengthUs / 1E6);
@@ -14,7 +18,8 @@ if rem(fftSize, 2) == 1
     fftSize = fftSize - 1;  % Avoid odd length of fft
 end
 
-fftWindow = hanning(fftSize)';
+%fftWindow = hanning(fftSize)';
+fftWindow = hann(fftSize)';
 
 lowSpecIdx = round(p.bpRanges(1)/fs*fftSize)+1;
 highSpecIdx = round(p.bpRanges(2)/fs*fftSize)+1;

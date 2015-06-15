@@ -44,7 +44,10 @@ for idx = 1:N  % "parfor" works here, parallellizing the process across as
         fid = fopen(currentFile, 'r');
         
         % Build a band pass filter
-        STFilter = spBuildEquiRippleFIR(p.fRanges, [0, 1], 'Fs', hdr.fs);
+        %STFilter = spBuildEquiRippleFIR(p.fRanges, [0, 1], 'Fs', hdr.fs);
+        N = 12;
+        [b,a] = butter(N/2, [p.fRanges(1) p.fRanges(2)]/(hdr.fs/2),'bandpass'); 
+        STFilter = [b;a];
         filtTaps = length(STFilter);
         
         % Loop through search area, running short term detectors
@@ -62,8 +65,9 @@ for idx = 1:N  % "parfor" works here, parallellizing the process across as
             end
             
             % bandpass
-            filtData = filter(STFilter,1,data);
-            filtData = filtData(filtTaps+1:end).^2;
+            %filtData = filter(STFilter,1,data); %iwht old filter
+            filtData = filtfilt(STFilter(1,:), STFilter(2,:),data); %with butter filter
+            filtData = filtData(filtTaps+1:end).^2; %KPM why is this ^2?
             
             % Flag times when the amplitude rises above a threshold
             spotsOfInt = find(filtData>(p.thresholds));
