@@ -1,6 +1,6 @@
 
 function plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
-    durClick,specClickTf,peakFr,nDur,yFilt,hdr,GraphDir)
+    durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f)
 
 fs = hdr.fs;
 
@@ -28,8 +28,12 @@ for ne = 1:numEnc
         pos1 = [clickTimes(clicksThisEnc,1);0];
         pos2 = [0;clickTimes(clicksThisEnc,1)];
         iciEncNum = pos1(2:end-1)-pos2(2:end-1);
-        iciEncVec = datevec(iciEncNum); %To get the vector
-        iciEncSecs = iciEncVec(:,6);
+%         %When using a guided detector, the clickTimes are relative to the
+%         %start of the file/already in seconds, so don't need to convert to
+%         %datevec.
+%         iciEncVec = datevec(iciEncNum); %To get the vector
+%         iciEncSecs = iciEncVec(:,6);
+        iciEncSecs = iciEncNum; 
         %If it's bigger than 0.5 seconds, remove it - there are missed
         %clicks (and that's generous, I could probably use 0.2 seconds or
         %less and still be fine. 
@@ -62,7 +66,6 @@ for ne = 1:numEnc
         specSorted=specSorted.';
 
         N=size(specSorted,1)*2;
-        f=0:(fs/2000)/(N/2-1):fs/2000;
         datarow=size(specSorted,2);
 
         %calculate mean spectra for click and noise
@@ -87,7 +90,7 @@ for ne = 1:numEnc
         subplot(2,2,2)
         vec=0:10:1000;
         hist(iciEnc,vec)
-        xlim([0 1000])
+        %xlim([0 1000])
         xlabel('inter-pulse interval (ms)')
         ylabel('counts')
         text(0.5,0.9,['dur =',num2str(medianValue(3)),' us'],'Unit','normalized')
@@ -97,7 +100,7 @@ for ne = 1:numEnc
         plot(f,meanSpecClick,'LineWidth',2), hold on
         %plot(f,meanSpecNoise,':k','LineWidth',2), hold off
         xlabel('Frequency (kHz)'), ylabel('Normalized amplitude (dB)')
-        ylim([50 125])
+        %ylim([50 125])
         xlim([0 fs/2000])
         title(['Mean click spectra, n=',num2str(size(specSorted,2))],'FontWeight','bold')
         text(0.5,0.9,['ppRL =',num2str(medianValue(4))],'Unit','normalized')
@@ -117,7 +120,7 @@ for ne = 1:numEnc
         plot(f,meanSpecClick,'LineWidth',2), hold on
         %plot(f,meanSpecNoise,':k','LineWidth',2), hold off
         xlabel('Frequency (kHz)'), ylabel('Normalized amplitude (dB)')
-        ylim([50 125])
+        %ylim([50 125])
         xlim([0 fs/2000])
         title(['Mean click spectra, n=',num2str(size(specSorted,2))],'FontWeight','bold')
         text(0.05,0.9,['pfr =',num2str(medianValue(1)),' kHz'],'Unit','normalized')

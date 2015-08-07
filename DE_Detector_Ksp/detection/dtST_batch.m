@@ -66,7 +66,9 @@ for idx = 1:N  % "parfor" works here, parallellizing the process across as
             
             % bandpass
             %filtData = filter(STFilter,1,data); %iwht old filter
-            filtData = filtfilt(STFilter(1,:), STFilter(2,:),data); %with butter filter
+            filtData = filter(STFilter(1,:), STFilter(2,:),data); %with butter filter (faster than filtfilt?)
+            %filtData = filtfilt(STFilter(1,:), STFilter(2,:),data); %with
+            %butter filtfilt
             filtData = filtData(filtTaps+1:end).^2; %KPM why is this ^2?
             
             % Flag times when the amplitude rises above a threshold

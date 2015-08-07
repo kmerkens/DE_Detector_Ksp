@@ -1,6 +1,6 @@
 
 function [medianValues,meanSpecClicks,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,clickTimes,ppSignal,...
-    durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs)
+    durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs,f)
 % Generates a set of plots for each encounter, even if they span multiple
 % xwavs. Called by cat_click_times.m for plotting after the detector has
 % been run.
@@ -138,7 +138,7 @@ for ne = 1:numEnc
         plot(f,meanSpecClick,'LineWidth',2), hold on
         %plot(f,meanSpecNoise,':k','LineWidth',2), hold off
         xlabel('Frequency (kHz)'), ylabel('Normalized amplitude (dB)')
-        ylim([50 125])
+        %ylim([50 125])
         xlim([0 fs/2000])
         title(['Mean click spectra, n=',num2str(size(specSorted,2))],'FontWeight','bold')
         text(0.5,0.9,['ppRL =',num2str(medianValue(4))],'Unit','normalized')
@@ -158,7 +158,7 @@ for ne = 1:numEnc
         plot(f,meanSpecClick,'LineWidth',2), hold on
         %plot(f,meanSpecNoise,':k','LineWidth',2), hold off
         xlabel('Frequency (kHz)'), ylabel('Normalized amplitude (dB)')
-        ylim([50 125])
+        %ylim([50 125])
         xlim([0 fs/2000])
         title(['Mean click spectra, n=',num2str(size(specSorted,2))],'FontWeight','bold')
         text(0.05,0.9,['pfr =',num2str(medianValue(1)),' kHz'],'Unit','normalized')

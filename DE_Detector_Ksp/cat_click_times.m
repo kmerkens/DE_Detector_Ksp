@@ -7,14 +7,16 @@
 % Saves one summary .mat and one long list of start/end times as .xls (and
 % plots, if requested)
 
+clearvars
+
 
 %Set sampling frequency, in Hz
 fs = 200000;
 
 %inDir = 'E:\metadata\bigDL'; % the path to your directory of detector outputs goes here
-inDir = 'E:\metadata\HAWAII01_disk09';
+inDir = 'D:\metadata\Hawaii06K_disk16';
 %inDir = 'C:\Users\Karlina.Merkens\Documents\Kogia\320_detectctor_dir\metadata\320_Detector_Test';
-matList = dir(fullfile(inDir,'HAW*.mat')); % Add wildcard to match the files you want to process.
+matList = dir(fullfile(inDir,'Haw*.mat')); % Add wildcard to match the files you want to process.
 clickDnum = [];
 durClickcon = [];
 nDurcon = [];
@@ -88,57 +90,59 @@ xlswrite([inDir,'\',choppedDir{3},'_ClicksOnlyConcatCHAR',filedate,'.xls'],click
 
 
 %%%Section added to do post-processing where all the clicks are together,
-%%%not speparted by xwav. 
+%%%not speparted by xwav. Only if you have detections already picked.
 
-%Get detectionTimes
-%get excel file to read
-[infile,inpath]=uigetfile('*.xls','Select .xls file to guide encounters');
-if isequal(infile,0)
-    disp('Cancel button pushed');
-    return
-end
+% %Get detectionTimes
+% %get excel file to read
+% % [infile,inpath]=uigetfile('*.xls','Select .xls file to guide encounters');
+% % if isequal(infile,0)
+% %     disp('Cancel button pushed');
+% %     return
+% % end
+% 
+% inpath = 'C:\Users\Karlina.Merkens\Documents\KogiaSpp\AnalysisLogs';
+% infile = 'HAWAII01_Ksp_150306_forDetector.xls';
+% 
+% %read the file into 3 matrices-- numeric, text, and raw cell array
+% [num, txt, raw] = xlsread([inpath '\' infile]);
+% %error check
+% [~,y]=size(num);
+% if y < 2;          %start and end dates not formatted as numbers
+%     h=errordlg('Please save dates in number format and click ok');
+%     uiwait(h)
+%     [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
+% end  
+% excelDates = num(:,1:2);                %numeric array contains datenums
+% %convert excel datenums to matlab datenums (different pivot year)
+% matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
+%     + excelDates;
+% 
+% %Use other code to do the plotting and get the medians.
+% %rename things
+% encounterTimes = matlabDates;
+% clickTimes = clickDnum;
+% guideDetector = 1;
+% ppSignal = ppSignalcon;
+% durClick = durClickcon;
+% specClickTf = specClickTfcon;
+% specNoiseTf = specNoiseTfcon;
+% peakFr = peakFrcon;
+% nDur = nDurcon;
+% yFilt = yFiltcon;
+% GraphDir = 'F:\metadata\matlab_graphs';
+% 
+% 
+% [medianValues,meanSpecClicks,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,clickTimes,ppSignal,durClick,...
+%     specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs,f);
+% 
+% %Then save everything - use this one if there's a guided detector. 
+% save([inDir,'\',choppedDir{3},'_ClicksOnlyConcat',filedate,'.mat'],...
+%     'clickDnum','durClickcon','nDurcon', 'peakFrcon','ppSignalcon',...
+%     'specClickTfcon','yFiltcon','medianValues','meanSpecClicks','iciEncs','f')
 
-% inpath = 'C:\Users\Karlina.Merkens\Documents\Kogia\AnalysisLogs\HAWAII18K';
-% infile = 'HAWAII18K_Ksp_Combo_ForDetector_150310.xls';
-
-%read the file into 3 matrices-- numeric, text, and raw cell array
-[num, txt, raw] = xlsread([inpath '\' infile]);
-%error check
-[~,y]=size(num);
-if y < 2;          %start and end dates not formatted as numbers
-    h=errordlg('Please save dates in number format and click ok');
-    uiwait(h)
-    [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
-end  
-excelDates = num(:,1:2);                %numeric array contains datenums
-%convert excel datenums to matlab datenums (different pivot year)
-matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
-    + excelDates;
-
-%Use other code to do the plotting and get the medians.
-%rename things
-encounterTimes = matlabDates;
-clickTimes = clickDnum;
-guideDetector = 1;
-ppSignal = ppSignalcon;
-durClick = durClickcon;
-specClickTf = specClickTfcon;
-specNoiseTf = specNoiseTfcon;
-peakFr = peakFrcon;
-nDur = nDurcon;
-yFilt = yFiltcon;
-GraphDir = 'E:\metadata\matlab_graphs';
-
-
-[medianValues,meanSpecClicks,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,clickTimes,ppSignal,durClick,...
-    specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs);
-
-
-%Then save everything
+%Then save everything - use this one if there's no guided detector. 
 save([inDir,'\',choppedDir{3},'_ClicksOnlyConcat',filedate,'.mat'],...
     'clickDnum','durClickcon','nDurcon', 'peakFrcon','ppSignalcon',...
-    'specClickTfcon','yFiltcon','medianValues','meanSpecClicks','iciEncs','f')
-
-
+    'specClickTfcon','yFiltcon','f')
 
 

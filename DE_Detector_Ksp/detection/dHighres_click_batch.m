@@ -86,6 +86,12 @@ for idx1=1:N; % for each data file
         plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
             durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
     end
+    
+    %Clear some variables to free up memory before going on to next file
+    clear('specNoiseTf', 'yFiltVec', 'yFilt', 'starts', 'stops',...
+        'yFiltBuffVec', 'hdr', 'yFiltBuff', 'specClickTfVec',...
+        'specNoiseTfVec', 'specClickTf') 
+
 end
     
 
