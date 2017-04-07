@@ -26,7 +26,7 @@ tic
 
 % Set transfer function location
 %tfFullFile = 'E:\Code\TF_files\604_100614\604_100614_invSensit.tf';
-tfFullFile = 'H:\Cetacean Research Program\HARP\TF_files\695_121203_invSensit.tf';
+tfFullFile = 'C:\Users\KMERKENS\Documents\HARPTFfiles\700_series\716_130723\716_130723_invSensit.tf';
 %tfFullFile = 'C:\Users\Karlina.Merkens\Documents\HARPTFfiles\400_series\406_070717\406_070717_invSensit.tf';
 
 % Note, if you don't have a tranfer function just use:
@@ -35,14 +35,14 @@ tfFullFile = 'H:\Cetacean Research Program\HARP\TF_files\695_121203_invSensit.tf
 
 % Location of base directory containing directories of files to be analyzed
 %baseDir = 'I:\GofMXArraySpRecs\Sb';
-baseDir = 'F:\';
+baseDir = 'D:\Hawaii_K_23_01\';
 
 % Name of the deployment. This should be the first few characters in the 
 % directory(ies) you want to look in you want to look at. For now,
 % directory hierarchy is expected to be: basedir>depl*>*.x.wav
 % TODO: implement recursive directory search for more flexibility.
 %depl = 'GofMX_';
-depl = 'Tinian';
+depl = 'Hawaii';
 
 
 % Set flags indicating which routines to run. 
@@ -56,7 +56,7 @@ inDisk = fileparts(baseDir(1:3));
 % Build list of (x)wav names in the base directory.
 % Right now only wav and xwav files are looked for.
 
-guideDetector = 1; %1 if using xls sheet to guide detection, 0 to run on all files in drive
+guideDetector = 0; %1 if using xls sheet to guide detection, 0 to run on all files in drive
 
 [detFiles,encounterTimes,GraphDir]= dFind_xwavs(baseDir,depl,guideDetector);
 
