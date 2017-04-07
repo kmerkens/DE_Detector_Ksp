@@ -57,8 +57,13 @@ save([inDir,'\AllParamsConcat',filedate,'.mat'],...
 'allclickDnum','alldurClickcon','allnDurcon','allpeakFrcon',...
 'allppSignalcon','allspecClickTfcon','allspecNoiseTfcon','allyFiltcon',...
 'allmedianValues','allmeanSpecClicks','allmeanSpecNoises')
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Calculate 25th, median and 75th percentiles for median values, to give some sense
 %of width of the histogram spans. 
@@ -73,6 +78,7 @@ mediciEncs = prctile(alliciEncs,50);
 meddurClick = prctile(alldurClickcon,50);
 mednDur = prctile(allnDurcon,50);
 medppSig = prctile(allppSignalcon,50);
+<<<<<<< HEAD
 
 Q3peakFr = prctile(allpeakFrcon,75);
 Q3iciEncs = prctile(alliciEncs,75);
@@ -84,6 +90,19 @@ Q3ppSig = prctile(allppSignalcon,75);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Make plots and save them
 
+=======
+
+Q3peakFr = prctile(allpeakFrcon,75);
+Q3iciEncs = prctile(alliciEncs,75);
+Q3durClick = prctile(alldurClickcon,75);
+Q3nDur = prctile(allnDurcon,75);
+Q3ppSig = prctile(allppSignalcon,75);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Make plots and save them
+
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 % %Click duration
 % figure(1)
 % hist(alldurClickcon,50)
@@ -217,9 +236,15 @@ freqs = f;
 figure(7)
 for p = 1:numSpecs
     %plot(freqs,allmeanSpecClicks(p,2:end), 'Color',rand(1,3));
+<<<<<<< HEAD
     plot(freqs,allmeanSpecClicks(p,2:end), 'Color','k','LineWidth',1);
     hold on
     plot(freqs,allmeanSpecNoises(p,2:end), 'Color',[0.7, 0.7, 0.7], 'LineWidth',1);
+=======
+    plot(freqs,allmeanSpecClicks(p,2:end), 'Color','k');
+    hold on
+    plot(freqs,allmeanSpecNoises(p,2:end), 'Color',[0.8, 0.8, 0.8], 'LineStyle',':');
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 end
 legend('mean click','mean noise','Location','southwest')
 title(['Mean Spectrum of Each Encounter (n = ',strnumenc,')']);
@@ -248,6 +273,7 @@ numFreqBins = (size(allmeanSpecClicks,2))-1;
 freqs = f;
 
 figure(8)
+<<<<<<< HEAD
 plot(freqs,grandmeanSpec(1,1:end), 'Color','k','LineWidth',1);
 hold on
 plot(freqs,allmeanSpecNoises(1,2:end), 'Color',[0.7, 0.7, 0.7], 'LineWidth',1);
@@ -257,6 +283,39 @@ title(['Mean Spectrum of all Clicks (n = ',num2str(numspecClick),')']);
 xlabel('Frequency (kHz)')
 ylabel('Amplitude (dB)')
 filename = fullfile(GraphDir,['MeanSpecGrand',filedate]);
+=======
+hist(allclickDnum(:,1),77) %77 days between start and end of effort, to get clicks per day.
+ylim([0 1300])
+% xlim([0 0.5])
+%Add grey boxes for no refording effort. Lines at july 27 and october 11 
+dategapblocksX = [735781 735781 735807 735807 735885 735885 735903 735903];%values for bottoms and tops of squares to add [b,t,t,b]
+dategapblocksY = [0 1300 1300 0 0 1300 1300 0];
+hold on
+grey = [0.8,0.8,0.8];
+fill(dategapblocksX,dategapblocksY, grey);
+ylim([0 1300])
+current_day = datenum('Jul 15 2014'); %the date the plot starts
+[Y, M, D, H, MN, S] = datevec(current_day);
+current_day = addtodate(current_day, -D + 1,'day');
+last_day = datenum('Oct 31 2014');
+xlim([current_day last_day]);
+xtick = [current_day];
+xstep_length = 1; %one tick per month
+xstep_unit = 'month';
+while (last_day > current_day)
+    xtick = [xtick addtodate(current_day, xstep_length, xstep_unit)];
+    current_day = addtodate(current_day, xstep_length, xstep_unit);
+end
+ts = gca;
+set(ts,'XTick', xtick,'XTickLabel', datestr(xtick,'mmm yy')); 
+%,'FontSize',14
+set(gca, 'Ticklength', [0 0])
+set(gcf, 'renderer', 'zbuffer'); %removes the exponent from the date  
+title(['Time Series of All Encounters (n = ',strnumenc,')']);
+ylabel('Counts of Clicks per Day')
+xlabel('Date') %Need something here to make this axis pretty with months/dates
+filename = fullfile(GraphDir,['TS_',filedate]);
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 saveas(gca, filename, 'tif')
 saveas(gca, filename, 'jpg')
 close(figure(8));

@@ -17,10 +17,10 @@ clickTimesPruned = [];
 clickTimes = sortrows(clickTimes);
 if size(clickTimes,1) > 2
     
-    %%%%Added 150219 KPM - check to see how many clicks there are within 60 
-    %%%%seconds of this click, and if there are more than 75, flag all for 
-    %%%%removal. 
-    
+%     %%%%Added 150219 KPM - check to see how many clicks there are within 60 
+%     %%%%seconds of this click, and if there are more than 75, flag all for 
+%     %%%%removal. 
+%     
 %     delFlag = ones(size(clickTimes(:,1)));
 %     for itrm = 1:size(clickTimes,1)
 %         winsize = 60;
@@ -30,7 +30,7 @@ if size(clickTimes,1) > 2
 %             (clickTimes(:,2) <= winend));
 %         wincount = size(idx,1);
 %         expandsize = 300;
-%         if wincount >= 75
+%         if wincount >= 105
 %             delFlag(idx) = 0;
 %             %%%Then check to see if there are clicks within 60 seconds of the
 %             %%%start or end, and remove those too, and if there are check to
@@ -78,7 +78,7 @@ if size(clickTimes,1) > 2
 %             (clickTimes(:,2) <= winend));
 %         wincount = size(idx,1);
 %         expandsize = 300;
-%         if wincount >= 20
+%         if wincount >= 40
 %             delFlag(idx) = 0;
 %             %%%same as above.
 %             expandstart = winstart;
@@ -112,8 +112,8 @@ if size(clickTimes,1) > 2
 %             end    
 %         end
 %     end  
-
-    %%%%End Added 150209 KPM
+% 
+%     %%%%End Added 150209 KPM
     
     
     delFlag = ones(size(clickTimes(:,1)));

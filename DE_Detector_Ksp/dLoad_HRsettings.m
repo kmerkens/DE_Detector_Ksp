@@ -1,17 +1,19 @@
 function parametersHR = dLoad_HRsettings
 
 %%% Filter and FFT params %%
-parametersHR.bpRanges = [50000,99000]; % Bandpass filter params in Hz [min,max]
+parametersHR.bpRanges = [40000,99000]; % Bandpass filter params in Hz [min,max]
 parametersHR.frameLengthUs = 1200; % For fft computation
 parametersHR.overlap = .5; % FFT overlap (in decimal, not percent form)
 parametersHR.chan = 1; % which channel do you want to look at?
-parametersHR.clipThreshold = .98;%  Normalized clipping threshold btwn 0 and 1.  If empty, 
-% assumes no clipping.
+parametersHR.clipThreshold = .80;%  Normalized clipping threshold btwn 0 and 1.  If empty, 
+% assumes no clipping. %Changed from 0.98 150731
 
 
 %%% Recieved level threshold params %%%
-parametersHR.ppThresh = 100;% minimum  RL threshold - dB peak to peak.
-parametersHR.countThresh = 3500; % Keep consistent with Lo-res for predictability.
+%parametersHR.ppThresh = 100;% minimum  RL threshold - dB peak to peak.
+parametersHR.ppThresh = 80;% lowered with new filter 150629 
+%parametersHR.ppThresh = 30; %Adjusted for having no tf.
+parametersHR.countThresh = 500000; % Keep consistent with Lo-res for predictability.
 % Can be higher than low res, but not lower!
 % Keep count threshold less than equivalent pp threshold. 
 %   dBs = 10*log10(abs(fft(counts *2^14))) - 10*log10(fs/(length(fftWindow)))...
@@ -19,7 +21,7 @@ parametersHR.countThresh = 3500; % Keep consistent with Lo-res for predictabilit
 % note: array uses 2^15
 
 %%% Envelope params %%%
-parametersHR.energyThr = 0.5; % n-percent energy threshold for envelope duration
+parametersHR.energyThr = 0.3; % n-percent energy threshold for envelope duration
 parametersHR.dEvLims = [-.4,.9];  % [min,max] Envelope energy distribution comparing 
 % first half to second half of high energy envelope of click. If there is
 % more energy in the first half of the click (dolphin) dEv >0, If it's more
@@ -45,13 +47,6 @@ parametersHR.mergeThr = 50;% min gap between energy peaks in us. Anything less
 % will be merged into one detection the beginning of the next is fewer
 % samples than this, the signals will be merged.
 
-parametersHR.localminbottom = 63; %Frequency above which will be checked 
-%for local min
-parametersHR.localmintop = 90; %Frequency below which will be checked for
-%local min.
-parametersHR.localminThr = 68; %Frequency above which a local minimum must
-%exist in order to be thrown out.  If the min is below, the click will be
-%kept
 
 
 % if you're using wav files that have a time stamp in the name, put a

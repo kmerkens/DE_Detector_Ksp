@@ -26,27 +26,44 @@ tic
 
 % Set transfer function location
 %tfFullFile = 'E:\Code\TF_files\604_100614\604_100614_invSensit.tf';
+<<<<<<< HEAD
 tfFullFile = 'C:\Users\KMERKENS\Documents\HARPTFfiles\700_series\716_130723\716_130723_invSensit.tf';
 %tfFullFile = 'C:\Users\Karlina.Merkens\Documents\HARPTFfiles\400_series\406_070717\406_070717_invSensit.tf';
+=======
+%tfFullFile = 'H:\Cetacean Research Program\HARP\TF_files\695_121203_invSensit.tf';
+tfFullFile = 'C:\Users\Karlina.Merkens\Documents\HARPTFfiles\400_series\453_080729\453_080729_invSensit.tf';
+%tfFullFile = 'C:\Users\Karlina.Merkens\Documents\HARPTFfiles\400_series\406_070717\406_070717_invSensit.tf'; %test data
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 
 % Note, if you don't have a tranfer function just use:
-% tfFullFile = [];
+%tfFullFile = [];
+% Remember that if there's no tf, you  need to adjust the parametersHR.ppThresh
+% to be about 70 lower, otherwise all clicks will be deleted.
 
 
 % Location of base directory containing directories of files to be analyzed
+<<<<<<< HEAD
 %baseDir = 'I:\GofMXArraySpRecs\Sb';
 baseDir = 'D:\Hawaii_K_23_01\';
+=======
+%baseDir = 'C:\Users\Karlina.Merkens\Documents\KogiaSpp\DetectorTestData\';
+baseDir = 'D:\';
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 
 % Name of the deployment. This should be the first few characters in the 
 % directory(ies) you want to look in you want to look at. For now,
 % directory hierarchy is expected to be: basedir>depl*>*.x.wav
 % TODO: implement recursive directory search for more flexibility.
 %depl = 'GofMX_';
+<<<<<<< HEAD
 depl = 'Hawaii';
+=======
+depl = 'Haw';
+>>>>>>> 18dfc1fa0cdc4fadefafaa1d6da05aff354aa79f
 
 
 % Set flags indicating which routines to run. 
-lowResDet =1; %run short time detector.
+lowResDet = 0; %run short time detector.
 highResDet = 1; %run high res detector
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
