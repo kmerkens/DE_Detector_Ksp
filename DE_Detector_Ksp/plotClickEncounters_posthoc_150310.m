@@ -1,5 +1,6 @@
 
-function [medianValues,meanSpecClicks,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,clickTimes,ppSignal,...
+function [medianValues,meanSpecClicks,meanSpecNoises, iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,...
+    clickTimes,ppSignal,...
     durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs,f)
 % Generates a set of plots for each encounter, even if they span multiple
 % xwavs. Called by cat_click_times.m for plotting after the detector has
@@ -14,6 +15,7 @@ clickDnum = clickTimes;
 numEnc = size(encounterTimes,1);
 clickCounts = [];
 meanSpecClicks = [];
+meanSpecNoises = [];
 medianValues = [];
 iciEncs = [];
 for ne = 1:numEnc
@@ -107,8 +109,11 @@ for ne = 1:numEnc
         meanSpecClick = mean(specSorted');
         SpecClickplusID = [encStart,meanSpecClick];
         meanSpecClicks = [meanSpecClicks; SpecClickplusID];
-
+        
+        %maybe add here a check for repeat noise signals.
         meanSpecNoise=mean(specSortedNoise');
+        SpecNoiseplusID = [encStart,meanSpecNoise];
+        meanSpecNoises = [meanSpecNoises; SpecNoiseplusID];
 
 %         sep = strfind(pathstr,'\');
 %         disk = pathstr(sep(2)+1:length(pathstr));
@@ -136,7 +141,7 @@ for ne = 1:numEnc
 
         subplot(2,2,3)
         plot(f,meanSpecClick,'LineWidth',2), hold on
-        %plot(f,meanSpecNoise,':k','LineWidth',2), hold off
+        plot(f,meanSpecNoise,':k','LineWidth',1), hold off
         xlabel('Frequency (kHz)'), ylabel('Normalized amplitude (dB)')
         %ylim([50 125])
         xlim([0 fs/2000])

@@ -58,7 +58,7 @@ foldersDepl = folders;
 for fidx = 1:length(folders)
     true = strfind(folders(fidx).name, depl);
     other = strfind(folders(fidx).name, 'other');
-    decim = strfind(folders(fidx).name, 'd100');
+    decim = strfind(folders(fidx).name, 'deci');
     if isempty(true) || ~isempty(decim) ||~isempty(other)
         trueIdx(fidx) = 0;
     else
@@ -110,6 +110,7 @@ for i = 1:size(matlabDates,1)
     if isempty(fileIdx)
         filetext = fullfile(BaseDir,'click_params', (sprintf('%s_%s', depl,datestr(matlabDates(i,1),30),'.txt')));
         fid = fopen(filetext,'w+');
+        disp('End time possibly on next disk');
         fprintf(fid,'%s','End time possibly on next disk');
         fclose(fid);
         

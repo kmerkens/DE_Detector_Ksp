@@ -90,6 +90,14 @@ for c = 1:size(clicks,1)
     
     % Compute noise spectrum
     %%%karlis
+    if length(clickBuff) < length(noiseBuff);
+        noiseBuff = noiseBuff(1:length(clickBuff));%make it the same length as the click
+    else
+        %display('Uh oh! The lengths of the click and noise are not right!')
+        validClicks(c) = 0; %remove this click/noise pair from analysis
+        continue
+    end
+    
     winNLength = length(noiseBuff);
     %winNLength = length(noise);
     windN = hann(winNLength);

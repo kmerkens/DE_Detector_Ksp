@@ -1,7 +1,7 @@
 function parametersHR = dLoad_HRsettings
 
 %%% Filter and FFT params %%
-parametersHR.bpRanges = [40000,99000]; % Bandpass filter params in Hz [min,max]
+parametersHR.bpRanges = [28000,99000]; % Bandpass filter params in Hz [min,max]
 parametersHR.frameLengthUs = 1200; % For fft computation
 parametersHR.overlap = .5; % FFT overlap (in decimal, not percent form)
 parametersHR.chan = 1; % which channel do you want to look at?
@@ -13,7 +13,7 @@ parametersHR.clipThreshold = .80;%  Normalized clipping threshold btwn 0 and 1. 
 %parametersHR.ppThresh = 100;% minimum  RL threshold - dB peak to peak.
 parametersHR.ppThresh = 80;% lowered with new filter 150629 
 %parametersHR.ppThresh = 30; %Adjusted for having no tf.
-parametersHR.countThresh = 500000; % Keep consistent with Lo-res for predictability.
+parametersHR.countThresh = 20000; % Keep consistent with Lo-res for predictability.
 % Can be higher than low res, but not lower!
 % Keep count threshold less than equivalent pp threshold. 
 %   dBs = 10*log10(abs(fft(counts *2^14))) - 10*log10(fs/(length(fftWindow)))...
@@ -32,7 +32,7 @@ parametersHR.delphClickDurLims = [15,30];% [min,max] duration in microsec
 
 
 %%% Other pruning params %%%
-parametersHR.cutPeakBelowKHz = 80; % discard click if peak frequency below X kHz
+parametersHR.cutPeakBelowKHz = 90; % discard click if peak frequency below X kHz
 parametersHR.cutPeakAboveKHz = 99.9; % discard click if peak frequency above Y kHz 
 parametersHR.minClick_us = 25;% Minimum duration of a click in us 
 parametersHR.maxClick_us = 1000; % Max duration of a click including echos

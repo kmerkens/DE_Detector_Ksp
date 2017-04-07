@@ -115,18 +115,26 @@ if size(clickTimes,1) > 2
 % 
 %     %%%%End Added 150209 KPM
     
-    
+    %%%Changed below 161110 KPM to only require 2 clicks together within 2
+    %%%seconds to save clicks.
     delFlag = ones(size(clickTimes(:,1)));
     for itr1 = 1:size(clickTimes,1)
         if itr1 == 1
             if clickTimes(itr1+2,1)-clickTimes(itr1,1)>p.maxNeighbor
                 delFlag(itr1) = 0;
             end
-        elseif itr1 >= size(clickTimes,1)-1
+        elseif itr1 >= size(clickTimes,1)
             [I,~] = find(delFlag(1:itr1-1)==1);
             prevClick = max(I);
             if isempty(prevClick)
-                delFlag(itr1) = 0;
+                %Check compared to the previous click, just in case.
+                if clickTimes(itr1,1) - clickTimes(itr1-1,1)>p.maxNeighbor
+                    %If that one's not close enough
+                    delFlag(itr1) = 0;
+                end 
+            elseif clickTimes(itr1,1) - clickTimes(itr1-1,1)>p.maxNeighbor
+                    %If that one's not close enough
+                    delFlag(itr1) = 0;
             elseif clickTimes(itr1,1) - clickTimes(prevClick,1)>p.maxNeighbor
                 delFlag(itr1) = 0;
             end
@@ -134,11 +142,13 @@ if size(clickTimes,1) > 2
             [I,~] = find(delFlag(1:itr1-1)==1);
             prevClick = max(I);
             if isempty(prevClick)
-                if clickTimes(itr1+2,1) - clickTimes(itr1,1)>p.maxNeighbor
+                if clickTimes(itr1+1,1) - clickTimes(itr1,1)>p.maxNeighbor
+                %if clickTimes(itr1+2,1) - clickTimes(itr1,1)>p.maxNeighbor
                     delFlag(itr1) = 0;
                 end
             elseif clickTimes(itr1,1)- clickTimes(prevClick,1)>p.maxNeighbor &&...
-                    clickTimes(itr1+2,1)-clickTimes(itr1,1)>p.maxNeighbor
+                    clickTimes(itr1+1,1)-clickTimes(itr1,1)>p.maxNeighbor
+                    %clickTimes(itr1+2,1)-clickTimes(itr1,1)>p.maxNeighbor
                 delFlag(itr1) = 0;
             end
         end

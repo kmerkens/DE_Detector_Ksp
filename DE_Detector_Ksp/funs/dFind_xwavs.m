@@ -7,7 +7,7 @@ folders = dir(baseDir);
 for fidx = 1:length(folders)
     true = strfind(folders(fidx).name, depl);
     decim = strfind(folders(fidx).name, 'd100');
-    other = strfind(folders(fidx).name, 'other');
+    other = strfind(folders(fidx).name, 'deci');
     if isempty(true) || ~isempty(decim) || ~isempty(other)
         trueIdx(fidx) = 0;
     else
