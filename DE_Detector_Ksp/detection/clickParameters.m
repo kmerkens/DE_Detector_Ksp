@@ -1,4 +1,4 @@
-function [clickInd,ppSignal,durClick,bw3db,yNFilt,yFilt,specClickTf,...
+function [clickInd,ppSignal,durClick,dur95usec,bw3db,yNFilt,yFilt,specClickTf,...
     specNoiseTf,peakFr,yFiltBuff,f,deltaEnv,nDur] = clickParameters(noises,wideBandData,p,fftWindow,...
     PtfN,clicks,specRange,hdr)
 
@@ -23,7 +23,9 @@ function [clickInd,ppSignal,durClick,bw3db,yNFilt,yFilt,specClickTf,...
 N = length(fftWindow);
 ppSignal = zeros(size(clicks,1),1);
 durClick =  zeros(size(clicks,1),1);
-bw3db = zeros(size(clicks,1),3);
+dur95usec = zeros(size(clicks,1),1);
+bw3db = nan(size(clicks,1),3);
+bw10db = zeros(size(clicks,1),3);
 yNFilt = cell(size(clicks,1),1); 
 yFilt = cell(size(clicks,1),1);
 zerosvec = zeros(1,300);
@@ -34,6 +36,7 @@ specNoiseTf = cell(size(clicks,1),1);
 yNFiltBuff = cell(size(clicks,1),1);
 peakFr = zeros(size(clicks,1),1);
 cDLims = ceil([p.minClick_us, p.maxClick_us]./(hdr.fs/1e6));
+cDLims95 = ceil([p.minClick_us, p.maxClick95_us]./(hdr.fs/1e6));
 envDurLim = ceil(p.delphClickDurLims./(hdr.fs/1e6));
 nDur = zeros(size(clicks,1),1);
 deltaEnv = zeros(size(clicks,1),1);
@@ -42,7 +45,9 @@ f = 0:((hdr.fs/2)/1000)/((N/2)-1):((hdr.fs/2)/1000);
 f = f(specRange);
 
 buffVal = hdr.fs*.00025; % Add small buffer, here, I want .25 ms, so computing how many samples to use.
-
+buffValBefore = hdr.fs*.00001; %adding 10us buffer before
+buffValAfter = hdr.fs*.00002; %adding 20us buffer after
+%buffVal = buffVal * 4;
 validClicks = ones(size(ppSignal));
 
 
@@ -56,8 +61,10 @@ validClicks = ones(size(ppSignal));
 
 for c = 1:size(clicks,1)
    % Pull out band passed click and noise timeseries
-    yFiltBuff{c} = wideBandData(max(clicks(c,1)-buffVal,1):min(clicks(c,2)+buffVal,size(wideBandData,2)));
-    yNFiltBuff{c} = wideBandData(max(noises(c,1)):min(noises(c,2)+buffVal,size(wideBandData,2)));
+%     yFiltBuff{c} = wideBandData(max(clicks(c,1)-buffVal,1):min(clicks(c,2)+buffVal,size(wideBandData,2)));
+%     yNFiltBuff{c} = wideBandData(max(noises(c,1)):min(noises(c,2)+buffVal,size(wideBandData,2)));
+    yFiltBuff{c} = wideBandData(floor(max(clicks(c,1)-buffValBefore,1)):ceil(min(clicks(c,2)+buffValAfter,size(wideBandData,2))));
+    yNFiltBuff{c} = wideBandData(floor(max(noises(c,1))):ceil(min(noises(c,2)+buffValAfter,size(wideBandData,2))));
     yFiltLength = clicks(c,2)-clicks(c,1)+1;
     yNFiltLength = noises(c,2)-noises(c,1)+1;
     yFilt{c,1}(1:yFiltLength) = wideBandData(clicks(c,1):clicks(c,2)); %changed to only extract portion of bandwidth allowed through BPF
@@ -98,7 +105,8 @@ for c = 1:size(clicks,1)
         continue
     end
     
-    winNLength = length(noiseBuff);
+%     winNLength = length(noiseBuff);
+    winNLength = length(clickBuff); %make it the same length as the click        
     %winNLength = length(noise);
     windN = hann(winNLength);
     %wNoise = zeros(1,N);
@@ -184,6 +192,12 @@ for c = 1:size(clicks,1)
 %     %with these really high freq signals
 %          plot(f(1:end-1),specClickTf{c}(1:end-1))
 %     %end
+
+    
+
+
+
+
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %calculate RLpp at peak frequency: find min/max value of timeseries,
@@ -215,28 +229,27 @@ for c = 1:size(clicks,1)
         validClicks(c) = 0;
         continue
     end
-    
-
-    
+   
    
     %%%%%%%%%%%%%%%%%
     % calculate click envelope (code & concept from SBP 2014):
     % pre_env = hilbert(click);
     % env = sqrt((real(pre_env)).^2+(imag(pre_env)).^2); %Au 1993, S.178, equation 9-4
-    env = abs(hilbert(click));
+%     env = abs(hilbert(click));
+    env1 = abs(hilbert(clickBuff));                                              
     
-    %calculate energy duration over x% energy
-    env = env - min(env);
-    env = env/max(env);
+    %calculate energy duration over x% energy(normalize to 0:1)
+    env2 = env1 - min(env1);
+    env3 = env2/max(env2);
     %determine if the slope of the envelope is positive or negative
     %above x% energy
-    aboveThr = find(env>=p.energyThr);
+    aboveThr = find(env3>=p.energyThr);
     direction = nan(1,length(aboveThr));
     for a = 1:length(aboveThr)
-        if aboveThr(a)>1 && aboveThr(a)<length(env)
+        if aboveThr(a)>1 && aboveThr(a)<length(env3)
             % if it's not the first or last element fo the envelope, then
             % -1 is for negative slope, +1 is for + slope
-            delta = env(aboveThr(a)+1)-env(aboveThr(a));
+            delta = env3(aboveThr(a)+1)-env3(aboveThr(a));
             if delta>=0
                 direction(a) = 1;
             else
@@ -252,39 +265,132 @@ for c = 1:size(clicks,1)
         end
     end
     
-    %find the first value above threshold with positive slope and find
-    %the last above with negative slope
-    lowIdx = aboveThr(find(direction,1,'first'));
-    negative = find(direction==-1);
-    if isempty(negative)
-        highIdx = aboveThr(end);
-    else
-        highIdx = aboveThr(negative(end));
-    end
-    nDur(c,1) = highIdx - lowIdx + 1;
+%     %find the first value above threshold with positive slope and find
+%     %the last above with negative slope
+%     lowIdx = aboveThr(find(direction,1,'first'));
+%     negative = find(direction==-1);
+%     if isempty(negative)
+%         highIdx = aboveThr(end);
+%     else
+%         highIdx = aboveThr(negative(end));
+%     end
+%     nDur(c,1) = highIdx - lowIdx + 1;
     
-    %Remove clicks that are too long
-    if nDur(c)>(p.delphClickDurLims(2))
-        validClicks(c) = 0;
-        continue
-    end
-    %Remove clicks that are too short
-    if nDur(c)<(p.delphClickDurLims(1))
-        validClicks(c) = 0;
-        continue
-    end
+%     %Remove clicks that are too long
+%     if nDur(c)>(p.delphClickDurLims(2))
+%         validClicks(c) = 0;
+%         continue
+%     end
+%     %Remove clicks that are too short
+%     if nDur(c)<(p.delphClickDurLims(1))
+%         validClicks(c) = 0;
+%         continue
+%     end
     
     %compare maximum first half of points with second half.
-    halves = ceil(nDur(c,1)/2);   
-    env1max = max(env(lowIdx:min([lowIdx+halves,length(env)])));
-    env2max = max(env(min([lowIdx+(halves)+1,length(env)]):end));
-    deltaEnv(c,1) = env1max-env2max;
-    
-     if deltaEnv(c) < p.dEvLims(1)
+%     halves = ceil(nDur(c,1)/2);   
+%     env1stmax = max(env3(lowIdx:min([lowIdx+halves,length(env3)])));
+%     env2ndmax = max(env3(min([lowIdx+(halves)+1,length(env3)]):end));
+%     deltaEnv(c,1) = env1stmax-env2ndmax;
+%     
+%      if deltaEnv(c) < p.dEvLims(1)
+%         validClicks(c) = 0;
+%         continue
+%      end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     %New section to calculate the duration of the click using 97% of of
+     %the envelope as the metric, sensu madsen et al 2005 and 2004,
+     %etc. That means looking from 1.5% to 98.5%
+
+     %Try making cumulative energy plot. 
+     %Standardize out of the total energy
+     
+     %Then sum and normalize to the max  
+     totenvenergy = sum(env1);
+     env4 = env1/totenvenergy;
+     clear('envcum')
+     for e = 2:size(env4,2)
+        envcum(1) = 0;
+        envcum(e) = envcum(e-1)+env4(e-1);
+        if e == size(env4,2)
+            envcum(e+1) = envcum(e) + env4(e);
+        end
+     end
+%      %Locate the ends of the 97% range
+%      durStart = 0.015;
+%      durEnd = 0.985;
+%      afterStart = find(envcum<=durStart,1,'first'); 
+%      beforeEnd = find(envcum>=durEnd,1,'first');
+%      dur97cts = beforeEnd - afterStart+1;
+%      dur97usec1 = dur97cts/(hdr.fs/1e6); %just to be able to see it while testing
+%      dur97usec(c) = dur97cts/(hdr.fs/1e6);
+     
+     %%Try for 95%
+     durStart95 = 0.025;
+     durEnd95 = 0.975;
+     afterStart95 = find(envcum<=durStart95,1,'first'); 
+     beforeEnd95 = find(envcum>=durEnd95,1,'first');
+     dur95cts = beforeEnd95 - afterStart95+1;
+     
+     dur95usec1 = dur95cts/(hdr.fs/1e6); %just to be able to see it while testing
+     dur95usec(c) = dur95cts/(hdr.fs/1e6);
+     %Only save durations less than 500 us, or whatever is specified in the
+     %HR settings
+     if dur95usec(c) > p.maxClick95_us
+         validClicks(c) = 0;
+         continue
+     end
+
+    %Remove clicks that are too short
+    if dur95usec(c)<(p.minClick_us)
         validClicks(c) = 0;
         continue
     end
     
+%     %Test to see about what works better in a noisy environment (can't
+%     %narrow BPF)
+%     %%Try for 80%
+%      durStart80 = 0.1;
+%      durEnd80 = 0.9;
+%      afterStart80 = find(envcum<=durStart80,1,'first'); 
+%      beforeEnd80 = find(envcum>=durEnd80,1,'first');
+%      dur80cts = beforeEnd80 - afterStart80+1;
+%      
+%      dur80usec1 = dur80cts/(hdr.fs/1e6); %just to be able to see it while testing
+%      dur80usec(c) = dur80cts/(hdr.fs/1e6);
+     
+%      %Check to see how much the extra buffer might be influencing the total
+%      %duration of the click
+%      figure(1)
+% %      subplot(2,1,1)
+%      plot(clickBuff)
+%      hold on
+%      plot(env1,'r')
+%      line([afterStart80 afterStart80], [min(clickBuff) max(clickBuff)],'Color','k','LineWidth',1);
+%      line([beforeEnd80 beforeEnd80], [min(clickBuff) max(clickBuff)],'Color','k','LineWidth',1);
+%      
+%      subplot(2,1,2)
+%      plot(clickBuff(1,1:150))
+%      
+     %check to see where click is within the segment
+%      subplot(2,1,1)
+%      plot(wideBandData)
+%      hold on
+%      line([clicks(c,1) clicks(c,1)], [min(wideBandData) max(wideBandData)],'Color','r','LineWidth',1);
+%      line([clicks(c,2) clicks(c,2)], [min(wideBandData) max(wideBandData)],'Color','r','LineWidth',1);
+%      
+%      subplot(2,1,2)
+%      startshortplot = clicks(c,1)-100;
+%      endshortplot = clicks(c,2)+100;
+%      plotseg = wideBandData(1,startshortplot:endshortplot);
+%      plot(plotseg);
+%      line([100 100], [min(wideBandData) max(wideBandData)],'Color','r','LineWidth',1);
+%      line([size(plotseg,2)-100 size(plotseg,2)-100], [min(wideBandData) max(wideBandData)],'Color','r','LineWidth',1);
+%      
+%      close(figure(1))
+
+
     %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     %Something to assess "shape" of time series - check for "teardrop"
 %     %kogia shape - if the number of samples after the peak is larger than
@@ -313,7 +419,7 @@ for c = 1:size(clicks,1)
     % Calculate duration
     durClick(c) = clicks(c,2)-clicks(c,1);
     
-    if durClick(c) > cDLims(2)
+    if durClick(c) > cDLims95(2)
         validClicks(c) = 0;
         continue
     end
@@ -323,36 +429,60 @@ for c = 1:size(clicks,1)
     
     
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     %calculate bandwidth
-%     %-3dB bandwidth
-%     %calculation of -3dB bandwidth - amplitude associated with the halfpower points of a pressure pulse (see Au 1993, p.118);
-%     low = valMx-3; %p1/2power = 10log(p^2max/2) = 20log(pmax)-3dB = 0.707*pmax; 1/10^(3/20)=0.707
-%     %walk along spectrogram until low is reached on either side
-%     slopeup=fliplr(specClickTf{c}(1:posMx));
-%     slopedown=specClickTf{c}(posMx:round(length(specClickTf{c})));
-%     for e3dB=1:length(slopeup)
-%         if slopeup(e3dB)<low %stop at value < -3dB: point of lowest frequency
-%             break
-%         end
-%     end
-%     for o3dB=1:length(slopedown)
-%         if slopedown(o3dB)<low %stop at value < -3dB: point of highest frequency
-%             break
-%         end
-%     end
-%     
+    %calculate bandwidth
+    %-3dB bandwidth
+    %calculation of -3dB bandwidth - amplitude associated with the halfpower points of a pressure pulse (see Au 1993, p.118);
+    low = valMx-3; %p1/2power = 10log(p^2max/2) = 20log(pmax)-3dB = 0.707*pmax; 1/10^(3/20)=0.707
+    %walk along spectrogram until low is reached on either side
+%    slopeup=fliplr(specClickTf(c,1:posMx)); Use this if the spectra are
+%    %matricies, otherwise use the one below, with flipud, if they're
+%    %vectors in cell arrays. 
+    slopeup=flipud(specClickTf{c}(1:posMx));
+
+    slopedown=specClickTf{c}(posMx:floor(length(specClickTf{c})));
+    for e3dB=1:length(slopeup)
+        if slopeup(e3dB)<low %stop at value < -3dB: point of lowest frequency
+            break
+        end
+    end
+    for o3dB=1:length(slopedown)
+        if slopedown(o3dB)<low %stop at value < -3dB: point of highest frequency
+            break
+        end
+    end
+    
 %     %calculation from spectrogram -> from 0 to 100kHz in 256 steps (FFT=512)
 %     high3dB = (hdr.fs/(2*1000))*((posMx+o3dB)/(length(specClickTf{c}))); %-3dB highest frequency in kHz
 %     low3dB = (hdr.fs/(2*1000))*(posMx-e3dB)/(length(specClickTf{c})); %-3dB lowest frequency in kHz
 %     bw3 = high3dB-low3dB;
-%     
-%     bw3db(c,:)= [low3dB, high3dB, bw3];
-%     
-%     
-%     %%%%%
+    
+    %Alternative method - use f vector previously determined:
+    highbin = posMx+o3dB;
+    %Add something to remove values that are above the nyquist. bw3db is a
+    %vector of NaNs to start with, so in this case we just skip the part of
+    %saving those numbers and leave the NaNs.
+    if highbin > length(f)
+        continue
+    else
+        high3dB = f(highbin);
+        lowbin = posMx-e3dB;
+        low3dB = f(lowbin);
+        bw3 = high3dB-low3dB;
+        
+        bw3db(c,:)= [low3dB, high3dB, bw3]; 
+    end
+    
+    
+    
+    
+    %%%%%
     
     
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%Useless to calculate -10dB BW for clicks near 100 khz
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -380,7 +510,8 @@ clickInd = find(validClicks == 1);
 % throw out clicks that don't fall in desired ranges
 ppSignal = ppSignal(clickInd,:);
 durClick =  durClick(clickInd,:);
-% bw3db = bw3db(clickInd,:);
+dur95usec = dur95usec(clickInd,:);
+bw3db = bw3db(clickInd,:);
 % frames = frames{clickInd};
 % yFilt = {yFilt{clickInd}};
 yFilt = yFilt(clickInd);

@@ -52,12 +52,12 @@ noise = [];
 noiseStop = min(stop, floor(candidatesRel(candidateIdx) ...
         - 0.5 * maxClick_samples));
 
-if noiseStop > noiseStart + minClick_samples
+    if noiseStop > noiseStart + minClick_samples
         noise = [noise; noiseStart noiseStop];
-end
+    end
 
-if isempty(noise) % if it didn't find any noise, grab some at random.
-    noise = [1,minClick_samples];
-end
+    if isempty(noise) % if it didn't find any noise, grab some at random.
+        noise = [1,minClick_samples];
+    end
 %%%%%%%%%%%%%%%
 end

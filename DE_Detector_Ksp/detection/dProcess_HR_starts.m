@@ -1,4 +1,4 @@
-function [clickTimes,ppSignalVec,durClickVec,bw3dbVec,yNFiltVec,yFiltVec,...
+function [clickTimes,ppSignalVec,durClickVec,dur95Vec,bw3dbVec,bw10dbVec,yNFiltVec,yFiltVec,...
     specClickTfVec, specNoiseTfVec, peakFrVec,yFiltBuffVec,f,deltaEnvVec,nDurVec]...
     = dProcess_HR_starts(fid, wideBandFilter,starts,stops,channel,xfrOffset,...
     specRange,p,hdr,fullFiles,fftWindow,fullLabel)
@@ -7,7 +7,9 @@ function [clickTimes,ppSignalVec,durClickVec,bw3dbVec,yNFiltVec,yFiltVec,...
 clickTimes = nan(5E6,2);
 ppSignalVec = nan(5E6,1);
 durClickVec = nan(5E6,1);
-bw3dbVec = [];
+dur95Vec = nan(5E6,1);
+bw3dbVec = nan(5E6,3);
+bw10dbVec = nan(5E6,3);
 yNFiltVec = [];
 yFiltVec = cell(5E6,1);
 specClickTfVec = cell(5E6,1);
@@ -36,13 +38,7 @@ for k = 1:numStarts % stepping through using the start/end points
     % Look for click candidates
     [clicks, noises] = dHighres_click(p, hdr, energy, wideBandData);
     
-    %Added in the unusual circumstance where there isn't enough room between
-    %multiple clicks to allow taking another noise sample. So, repeat the
-    %original noise sample to correspond to the second click.
-    if ~isequal(size(clicks,1), size(noises,1));
-        numclicks = size(clicks,1);
-        noises = repmat(noises,numclicks,1);
-    end
+    
     
     if ~ isempty(clicks)
         % if we're in here, it's because we detected one or more possible
@@ -54,8 +50,20 @@ for k = 1:numStarts % stepping through using the start/end points
         % meet peak frequency and bandwidth requirements
         clicks = clicks(validClicks==1,:);
         
+        %Added in the circumstance where there isn't enough room between
+        %multiple clicks to allow taking another noise sample. So, repeat the
+        %original noise sample to correspond to the second click.Most likely
+        %these duplicate clicks/noises will be thrown out later because they
+        %are too close in time and will be within the lockout period added in
+        %clickInlinePProc.m                                        
+        if ~isequal(size(clicks,1), size(noises,1));
+            numclicks = size(clicks,1);
+            noises = repmat(noises,numclicks,1);
+        end
+        
         % Compute click parameters to decide if the detection should be kept
-        [clickInd,ppSignal,durClick,~,~,yFilt,specClickTf,specNoiseTf,peakFr,yFiltBuff,...
+        [clickInd,ppSignal,durClick,dur95usec,bw3db,...
+            ~,yFilt,specClickTf,specNoiseTf,peakFr,yFiltBuff,...
             f,deltaEnv,nDur] = clickParameters(noises,wideBandData,p,...
             fftWindow,xfrOffset,clicks,specRange,hdr);
         
@@ -68,7 +76,9 @@ for k = 1:numStarts % stepping through using the start/end points
             clickTimes(sIdx:eIdx,1:2) = [clkStarts,clkEnds];
             ppSignalVec(sIdx:eIdx,1) = ppSignal;
             durClickVec(sIdx:eIdx,1) = durClick;
-            % bw3dbVec = [bw3dbVec;bw3db];
+            dur95Vec(sIdx:eIdx,1) = dur95usec;
+            bw3dbVec(sIdx:eIdx,:) = bw3db;
+            % bw10dbVec(sIdx:eIdx,:) = bw10db;
             % yNFiltVec = [yNFiltVec;yNFilt];
             yFiltVec(sIdx:eIdx,:)= yFilt';
             specClickTfVec(sIdx:eIdx,1) = specClickTf';
@@ -91,6 +101,9 @@ fclose(fidOut);
 clickTimes = clickTimes(1:eIdx,:);
 ppSignalVec = ppSignalVec(1:eIdx,:);
 durClickVec = durClickVec(1:eIdx,:);
+dur95Vec = dur95Vec(1:eIdx,:);   
+bw3dbVec =bw3dbVec(1:eIdx,:);
+% bw10dbVec =bw10dbVec(1:eIdx,:);
 yFiltVec = yFiltVec(1:eIdx,:);
 specClickTfVec = specClickTfVec(1:eIdx,:);
 specNoiseTfVec = specNoiseTfVec(1:eIdx,:);

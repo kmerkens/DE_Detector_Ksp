@@ -13,13 +13,11 @@ clearvars
 %Set sampling frequency, in Hz
 fs = 200000;
 
-GraphDir = 'D:\test\metadata\matlab_graphs';
-
 %inDir = 'E:\metadata\bigDL'; % the path to your directory of detector outputs goes here
 %inDir = 'D:\metadata\Hawaii06K_disk16';
-inDir = 'D:\test\metadata\CSM01_disk02';
+inDir = 'D:\Hawaii_K_23_01\metadata\Hawaii_K_23_01_disk01';
 %inDir = 'C:\Users\Karlina.Merkens\Documents\Kogia\320_detectctor_dir\metadata\320_Detector_Test';
-matList = dir(fullfile(inDir,'Cro*.mat')); % Add wildcard to match the files you want to process.
+matList = dir(fullfile(inDir,'Haw*.mat')); % Add wildcard to match the files you want to process.
 
 %%%!!!!! Also set the guided xls below (around line 175) for graphing, if clicks already
 %%%picked!!
@@ -28,7 +26,10 @@ matList = dir(fullfile(inDir,'Cro*.mat')); % Add wildcard to match the files you
 
 clickDnum = [];
 durClickcon = [];
+bw3dbcon = [];
+bw10dbcon = [];
 nDurcon = [];
+ndur95con = [];
 peakFrcon = [];
 ppSignalcon = [];
 specClickTfcon = [];
@@ -42,13 +43,17 @@ for i1 = 1:length(matList)
     clickDnumTemp = [];
     % only need to load hdr and click times
     load(fullfile(inDir,matList(i1).name),'hdr','clickTimes', 'durClick', ...
+		'dur95','bw3db',...
         'nDur', 'peakFr','ppSignal','specClickTf','specNoiseTf','yFilt','f')
     if ~isempty(clickTimes)
     % determine true click times
         clickDnumTemp = (clickTimes./sec2dnum) + hdr.start.dnum + datenum([2000,0,0]);
         clickDnum = [clickDnum;clickDnumTemp]; %save to one vector
         durClickcon = [durClickcon;durClick];
+		bw3dbcon = [bw3dbcon;bw3db];
+%         bw10dbcon = [bw10dbcon;bw10db]; 
         nDurcon = [nDurcon; nDur];
+		ndur95con = [ndur95con; dur95];
         peakFrcon = [peakFrcon; peakFr];
         ppSignalcon = [ppSignalcon; ppSignal];
         specClickTfcon = [specClickTfcon; specClickTf];
@@ -91,135 +96,155 @@ choppedDir = strsplit(inDir,'\'); %cut up the file path to get the disk name
 %so that you can save the files with identification. 
 filedate = datestr(now, 'yymmdd');
 
+if isempty(clickDnum)
+    print('Uh oh! There were no clicks saved from any of these detections!');
+    break
+else 
+    %Added to save start/end times as character arrays
+    clickDnumChar1 = char(datestr(clickDnum(:,1)));
+    clickDnumChar2 = char(datestr(clickDnum(:,2)));
+    numclicks = size(clickDnum,1);
+    clickDnumChar = {};
+    for nc = 1:numclicks
+        clickDnumChar{nc,1} = clickDnumChar1(nc,:);
+        clickDnumChar{nc,2} = clickDnumChar2(nc,:);
+    end
+    xlswrite([inDir,'\',choppedDir{4},'_ClicksOnlyConcatCHAR',filedate,'.xls'],clickDnumChar)
 
-%Added to save start/end times as character arrays
-clickDnumChar1 = char(datestr(clickDnum(:,1)));
-clickDnumChar2 = char(datestr(clickDnum(:,2)));
-numclicks = size(clickDnum,1);
-clickDnumChar = {};
-for nc = 1:numclicks
-    clickDnumChar{nc,1} = clickDnumChar1(nc,:);
-    clickDnumChar{nc,2} = clickDnumChar2(nc,:);
-end
-xlswrite([inDir,'\',choppedDir{3},'_ClicksOnlyConcatCHAR',filedate,'.xls'],clickDnumChar)
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Add step to go through and make a "short list" of the detections, using
-%clicks separated by not more than 3 minutes, providing a start time, end
-%time and the total number of clicks. This is used for verifying the click
-%bouts in triton to make a log before running a guided detector.
-startclick = clickDnum(1,1);
-threemin = datenum([0,0,0,0,3,0]);
-clickitr = 1;
-boutitr = 1;
-bouts = [];
-for ncc = 2:numclicks
-   prevclick = clickDnum(ncc-1,2);
-   checkclick = clickDnum(ncc,1);
-   clickdiff = checkclick-prevclick;
-   if clickdiff > threemin || ncc == numclicks
-       bouts(boutitr,1) = startclick;
-       if ncc == numclicks
-           endclick = clickDnum(ncc,2);
-       else
-           endclick = clickDnum(ncc-1,2);
-       end
-       bouts(boutitr,2) = endclick;
-       if ncc == numclicks
-           clickitr = clickitr +1;
-       end
-       bouts(boutitr,3) = clickitr;
-       if ncc < numclicks
-           startclick = clickDnum(ncc,2);
-       else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Add step to go through and make a "short list" of the detections, using
+    %clicks separated by not more than 3 minutes, providing a start time, end
+    %time and the total number of clicks. This is used for verifying the click
+    %bouts in triton to make a log before running a guided detector.
+    startclick = clickDnum(1,1);
+    threemin = datenum([0,0,0,0,3,0]);
+    clickitr = 1;
+    boutitr = 1;
+    bouts = [];
+    for ncc = 2:numclicks
+       prevclick = clickDnum(ncc-1,2);
+       checkclick = clickDnum(ncc,1);
+       clickdiff = checkclick-prevclick;
+       if clickdiff > threemin || ncc == numclicks
+           bouts(boutitr,1) = startclick;
+           if ncc == numclicks
+               endclick = clickDnum(ncc,2);
+           else
+               endclick = clickDnum(ncc-1,2);
+           end
+           bouts(boutitr,2) = endclick;
+           if ncc == numclicks
+               clickitr = clickitr +1;
+           end
+           bouts(boutitr,3) = clickitr;
+           if ncc < numclicks
+               startclick = clickDnum(ncc,2);
+           else
+               continue
+           end   
+           clickitr = 1;
+           boutitr = boutitr + 1;
+       elseif clickdiff < threemin
+           clickitr = clickitr + 1;
            continue
-       end   
-       clickitr = 1;
-       boutitr = boutitr + 1;
-   elseif clickdiff < threemin
-       clickitr = clickitr + 1;
-       continue
-   end
+       end
+    end
+    boutsChar1 = char(datestr(bouts(:,1)));
+    boutsChar2 = char(datestr(bouts(:,2)));
+    boutsChar3 = num2str(bouts(:,3));
+    numbouts = size(bouts,1);
+    boutsChar = {};
+    for nb = 1:numbouts
+        boutsChar{nb,1} = boutsChar1(nb,:);
+        boutsChar{nb,2} = boutsChar2(nb,:);
+        boutsChar{nb,3} = boutsChar3(nb,:);
+    end
+    xlswrite([inDir,'\',choppedDir{4},'_BOUTS',filedate,'.xls'],boutsChar)
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%Section added to do post-processing where all the clicks are together,
+    %%%not speparted by xwav. Only if you have detections already picked.
+
+    %Get detectionTimes
+    %get excel file to read
+    [infile,inpath]=uigetfile('*.xls','Select .xls file to guide detector');
+    if isequal(infile,0)
+        disp('Cancel button pushed');
+        return
+    end
+
+    %  inpath = 'C:\Users\Karlina.Merkens\Documents\Kogia\AnalysisLogs';
+    %  infile = 'SAIPAN06_ksp_kpm_170316_manuaANDdetectorfordetec.xls';
+
+    %read the file into 3 matrices-- numeric, text, and raw cell array
+    [num, txt, raw] = xlsread([inpath '\' infile]);
+    %error check
+    [~,y]=size(num);
+    if y < 2;          %start and end dates not formatted as numbers
+        h=errordlg('Please save dates in number format and click ok');
+        uiwait(h)
+        [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
+    end  
+    excelDates = num(:,1:2);                %numeric array contains datenums
+    %convert excel datenums to matlab datenums (different pivot year)
+    matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
+        + excelDates;
+
+    %Use other code to do the plotting and get the medians.
+    %rename things
+    encounterTimes = matlabDates;
+    clickTimes = clickDnum;
+    guideDetector = 1;
+    ppSignal = ppSignalcon;
+    durClick = durClickcon;
+    bw3db = bw3dbcon; 
+%     bw10db = bw10dbcon; 
+    specClickTf = specClickTfcon;
+    specNoiseTf = specNoiseTfcon;
+    ndur95 = ndur95con; 
+    peakFr = peakFrcon;
+    nDur = nDurcon;
+    yFilt = yFiltcon;
+    f = fsaved;
+    GraphDir = [inDir,'\matlab_graphs'];
+    %GraphDir = 'D:\metadata\matlab_graphs';
+
+    [medianValues,meanSpecClicks,meanSpecNoises,iciEncs,clickTimesconP,...
+        durClickconP, ndur95conP, bw3dbconP, nDurconP, peakFrconP, ppSignalconP,...
+        specClickTfconP,specNoiseTfconP, yFiltconP] = plotClickEncounters_posthoc_150310(encounterTimes,...
+        clickTimes,ppSignal,durClick,ndur95,bw3db,...
+        specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
+
+    %Change the name on the pruned parameters
+    clickDnum = clickTimesconP;
+    durClickcon = durClickconP;
+    bw3dbcon = bw3dbconP;
+%     bw10dbcon = bw10dbconP;
+    nDurcon = nDurconP;
+    ndur95con = ndur95conP;
+    peakFrcon = peakFrconP;
+    ppSignalcon = ppSignalconP;
+    specClickTfcon = specClickTfconP;
+    specNoiseTfcon = specNoiseTfconP;
+    yFiltcon = yFiltconP;
+
+    % Then save everything - use this one if there's a guided detector. 
+    save([inDir,'\',choppedDir{4},'_ClicksOnlyConcat',filedate,'.mat'],...
+        'clickDnum','durClickcon','ndur95con','bw3dbcon',...
+        'nDurcon', 'peakFrcon','ppSignalcon',...
+        'specClickTfcon','specNoiseTfcon','yFiltcon',...
+        'medianValues','meanSpecClicks','meanSpecNoises','iciEncs','f')
+    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    % %Then save everything - use this one if there's no guided detector. 
+    % save([inDir,'\',choppedDir{4},'_ClicksOnlyConcat',filedate,'.mat'],...
+    %     'clickDnum','durClickcon','ndur95con','bw3dbcon',...
+    %     'nDurcon', 'peakFrcon','ppSignalcon',...
+    %     'specClickTfcon','specNoiseTfcon','yFiltcon','f')
+    % 
+
 end
-boutsChar1 = char(datestr(bouts(:,1)));
-boutsChar2 = char(datestr(bouts(:,2)));
-boutsChar3 = num2str(bouts(:,3));
-numbouts = size(bouts,1);
-boutsChar = {};
-for nb = 1:numbouts
-    boutsChar{nb,1} = boutsChar1(nb,:);
-    boutsChar{nb,2} = boutsChar2(nb,:);
-    boutsChar{nb,3} = boutsChar3(nb,:);
-end
-xlswrite([inDir,'\',choppedDir{3},'_BOUTS',filedate,'.xls'],boutsChar)
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%Section added to do post-processing where all the clicks are together,
-%%%not speparted by xwav. Only if you have detections already picked.
-
-% %Get detectionTimes
-% %get excel file to read
-% % [infile,inpath]=uigetfile('*.xls','Select .xls file to guide detector');
-% % if isequal(infile,0)
-% %     disp('Cancel button pushed');
-% %     return
-% % end
-% 
-%  inpath = 'C:\Users\Karlina.Merkens\Documents\Kogia\AnalysisLogs';
-%  infile = 'SAIPAN06_ksp_kpm_170316_manuaANDdetectorfordetec.xls';
-% 
-% %read the file into 3 matrices-- numeric, text, and raw cell array
-% [num, txt, raw] = xlsread([inpath '\' infile]);
-% %error check
-% [~,y]=size(num);
-% if y < 2;          %start and end dates not formatted as numbers
-%     h=errordlg('Please save dates in number format and click ok');
-%     uiwait(h)
-%     [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
-% end  
-% excelDates = num(:,1:2);                %numeric array contains datenums
-% %convert excel datenums to matlab datenums (different pivot year)
-% matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
-%     + excelDates;
-% 
-% %Use other code to do the plotting and get the medians.
-% %rename things
-% encounterTimes = matlabDates;
-% clickTimes = clickDnum;
-% guideDetector = 1;
-% ppSignal = ppSignalcon;
-% durClick = durClickcon;
-% specClickTf = specClickTfcon;
-% specNoiseTf = specNoiseTfcon;
-% peakFr = peakFrcon;
-% nDur = nDurcon;
-% yFilt = yFiltcon;
-% f = fsaved;
-% 
-% 
-% [medianValues,meanSpecClicks,meanSpecNoises,iciEncs] = plotClickEncounters_posthoc_150310(encounterTimes,...
-%     clickTimes,ppSignal,durClick,...
-%     specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,fs,f);
-% % clickTimes,ppSignal,durClick,bw3db,bw10db,...
-% 
-% % Then save everything - use this one if there's a guided detector. 
-% save([inDir,'\',choppedDir{3},'_ClicksOnlyConcat',filedate,'.mat'],...
-%     'clickDnum','durClickcon','nDurcon', 'peakFrcon','ppSignalcon',...
-%     'specClickTfcon','specNoiseTfcon','yFiltcon',...
-%     'medianValues','meanSpecClicks','meanSpecNoises','iciEncs','f')
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%Then save everything - use this one if there's no guided detector. 
-save([inDir,'\',choppedDir{3},'_ClicksOnlyConcat',filedate,'.mat'],...
-    'clickDnum','durClickcon','nDurcon', 'peakFrcon','ppSignalcon',...
-    'specClickTfcon','specNoiseTfcon','yFiltcon','f')
-
-

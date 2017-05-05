@@ -177,13 +177,32 @@ end
         %jesus
         sec2dnum = 60*60*24; % conversion factor to get from seconds to matlab datenum
         clickDnum = (clickTimes./sec2dnum) + hdr.start.dnum + datenum([2000,0,0]);
+%         clickDnum = (clickTimes./sec2dnum) + hdr.start.dnum;
+        % datenum([2000,0,0]); %Include the 2000 if your original start time                                                                   -
+        % is based on a YY format, not a YYYY                                                                                             clickDnum = (clickTimes./sec2dnum) + hdr.start.dnum;
         for itr2 = 1:size(clickDnum,1)
             thisstart = clickDnum(itr2,1);
             thisend = clickDnum(itr2,2);
-            afterstarts = find(encounterTimes(:,1)> thisstart);
+            %If this click is before the start of the first or after 
+            %the end of the last, remove it
+            if thisend > max(encounterTimes(:,2)) || thisstart < min(encounterTimes(:,1))
+                delFlag(itr2) = 0;
+                continue
+            end  
+            afterstarts = find(encounterTimes(:,1)>= thisstart);
             firstafterstart = min(afterstarts);
             beforeend = find(encounterTimes(:,2)> thisend);
             firstbeforeend = min(beforeend);
+            %If there is only one encounter, continue - we have already
+            %thrown out the clicks from before the encounter and after in
+            %previous lines
+            if size(encounterTimes(:,1),1) == 1
+                continue
+            end
+            %If it's in the last encounter, continue
+            if max(encounterTimes(:,1))< thisstart && thisstart < max(encounterTimes(:,2))
+                continue
+            end
             if firstafterstart ~= firstbeforeend+1;
                 %Then this click does not fall within an encounter, chuck it
                 delFlag(itr2) = 0;

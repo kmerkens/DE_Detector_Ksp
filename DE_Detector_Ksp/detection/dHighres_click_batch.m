@@ -39,7 +39,7 @@ for idx1=1:N; % for each data file
     fid = ioOpenViewpath(fullFiles{idx1}, viewPath, 'r');
     
     % Look for clicks, hand back parameters of retained clicks
-    [clickTimes,ppSignalVec,durClickVec,~,~,yFiltVec,...
+    [clickTimes,ppSignalVec,durClickVec,dur95Vec,bw3dbVec,~,~,yFiltVec,...
         specClickTfVec,specNoiseTfVec,peakFrVec,yFiltBuffVec,f,deltaEnvVec,nDurVec]...
         = dProcess_HR_starts(fid, wideBandFilter,starts,stops,channel,...
         xfrOffset,specRange,p,hdr,fullFiles{idx1},fftWindow,fullLabels{idx1});
@@ -60,11 +60,14 @@ for idx1=1:N; % for each data file
     clickTimes = clickTimes(delIdx,:);
     ppSignal = ppSignalVec(delIdx,:);
     durClick = durClickVec(delIdx,:);
-    % bw3db = bw3dbVec(delIdx,:);
+    dur95 = dur95Vec(delIdx,:);
+    bw3db = bw3dbVec(delIdx,:);
+    % bw10db = bw10dbVec(delIdx,:);
     % yNFilt = yNFiltVec;
     specClickTf = specClickTfVec(delIdx,:);
     specNoiseTf = specNoiseTfVec(delIdx,:);
     peakFr = peakFrVec(delIdx,:);
+    
     deltaEnv = deltaEnvVec(delIdx,:);
     nDur = nDurVec(delIdx,:);
     
@@ -77,20 +80,20 @@ for idx1=1:N; % for each data file
     end
     
     save(strcat(fullLabels{idx1}(1:end-2),'.mat'),'clickTimes','ppSignal',...
-        'durClick','f','hdr','nDur','deltaEnv','yFilt','specClickTf',...
+        'durClick','dur95','bw3db','f','hdr','nDur','deltaEnv','yFilt','specClickTf',...
         'specNoiseTf','peakFr','-mat','yFiltBuff');%
     
-    % Make plots of each encounter's click parameters, now that all extra
-    % clicks have been removed. Save those to a directory.
-    if guideDetector == 1
-        plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
-            durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
-    end
+%     % Make plots of each encounter's click parameters, now that all extra
+%     % clicks have been removed. Save those to a directory.
+%     if guideDetector == 1
+%         plotClickEncounters_150310(encounterTimes,clickTimes,ppSignal,...
+%             durClick,specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
+%     end
     
     %Clear some variables to free up memory before going on to next file
     clear('specNoiseTf', 'yFiltVec', 'yFilt', 'starts', 'stops',...
         'yFiltBuffVec', 'hdr', 'f','yFiltBuff', 'specClickTfVec',...
-        'specNoiseTfVec', 'specClickTf') 
+        'specNoiseTfVec', 'specClickTf','deltaEnv') 
 
 end
     

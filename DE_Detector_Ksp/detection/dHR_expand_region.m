@@ -12,7 +12,7 @@ else
 	dataSmooth = fastsmooth(abs(bpDataHi),15);
 end
 
-thresh = prctile(dataSmooth,70);
+thresh = prctile(dataSmooth,96); %Changed from 70 170502 for hawaiik23 data. 
 for itr = 1:length(sStarts)
     rangeVec = sStarts(itr):sStops(itr);
     % Discard smooth to make an envelope
