@@ -97,7 +97,7 @@ choppedDir = strsplit(inDir,'\'); %cut up the file path to get the disk name
 filedate = datestr(now, 'yymmdd');
 
 if isempty(clickDnum)
-    print('Uh oh! There were no clicks saved from any of these detections!');
+    display('Uh oh! There were no clicks saved from any of these detections!');
     break
 else 
     %Added to save start/end times as character arrays
@@ -162,89 +162,89 @@ else
     xlswrite([inDir,'\',choppedDir{4},'_BOUTS',filedate,'.xls'],boutsChar)
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%Section added to do post-processing where all the clicks are together,
-    %%%not speparted by xwav. Only if you have detections already picked.
+% %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %     %%%Section added to do post-processing where all the clicks are together,
+% %     %%%not speparted by xwav. Only if you have detections already picked.
+% % 
+% %     %Get detectionTimes
+% %     %get excel file to read
+% %     [infile,inpath]=uigetfile('*.xls','Select .xls file to guide detector');
+% %     if isequal(infile,0)
+% %         disp('Cancel button pushed');
+% %         return
+% %     end
+% % 
+% %     %  inpath = 'C:\Users\Karlina.Merkens\Documents\Kogia\AnalysisLogs';
+% %     %  infile = 'SAIPAN06_ksp_kpm_170316_manuaANDdetectorfordetec.xls';
+% % 
+% %     %read the file into 3 matrices-- numeric, text, and raw cell array
+% %     [num, txt, raw] = xlsread([inpath '\' infile]);
+% %     %error check
+% %     [~,y]=size(num);
+% %     if y < 2;          %start and end dates not formatted as numbers
+% %         h=errordlg('Please save dates in number format and click ok');
+% %         uiwait(h)
+% %         [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
+% %     end  
+% %     excelDates = num(:,1:2);                %numeric array contains datenums
+% %     %convert excel datenums to matlab datenums (different pivot year)
+% %     matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
+% %         + excelDates;
+% % 
+% %     %Use other code to do the plotting and get the medians.
+% %     %rename things
+% %     encounterTimes = matlabDates;
+% %     clickTimes = clickDnum;
+% %     guideDetector = 1;
+% %     ppSignal = ppSignalcon;
+% %     durClick = durClickcon;
+% %     bw3db = bw3dbcon; 
+% % %     bw10db = bw10dbcon; 
+% %     specClickTf = specClickTfcon;
+% %     specNoiseTf = specNoiseTfcon;
+% %     ndur95 = ndur95con; 
+% %     peakFr = peakFrcon;
+% %     nDur = nDurcon;
+% %     yFilt = yFiltcon;
+% %     f = fsaved;
+% %     GraphDir = [inDir,'\matlab_graphs'];
+% %     %GraphDir = 'D:\metadata\matlab_graphs';
+% % 
+% %     [medianValues,meanSpecClicks,meanSpecNoises,iciEncs,clickTimesconP,...
+% %         durClickconP, ndur95conP, bw3dbconP, nDurconP, peakFrconP, ppSignalconP,...
+% %         specClickTfconP,specNoiseTfconP, yFiltconP] = plotClickEncounters_posthoc_150310(encounterTimes,...
+% %         clickTimes,ppSignal,durClick,ndur95,bw3db,...
+% %         specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
+% % 
+% %     %Change the name on the pruned parameters
+% %     clickDnum = clickTimesconP;
+% %     durClickcon = durClickconP;
+% %     bw3dbcon = bw3dbconP;
+% % %     bw10dbcon = bw10dbconP;
+% %     nDurcon = nDurconP;
+% %     ndur95con = ndur95conP;
+% %     peakFrcon = peakFrconP;
+% %     ppSignalcon = ppSignalconP;
+% %     specClickTfcon = specClickTfconP;
+% %     specNoiseTfcon = specNoiseTfconP;
+% %     yFiltcon = yFiltconP;
+% % 
+% %     % Then save everything - use this one if there's a guided detector. 
+% %     save([inDir,'\',choppedDir{4},'_ClicksOnlyConcat',filedate,'.mat'],...
+% %         'clickDnum','durClickcon','ndur95con','bw3dbcon',...
+% %         'nDurcon', 'peakFrcon','ppSignalcon',...
+% %         'specClickTfcon','specNoiseTfcon','yFiltcon',...
+% %         'medianValues','meanSpecClicks','meanSpecNoises','iciEncs','f')
+% %     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    %Get detectionTimes
-    %get excel file to read
-    [infile,inpath]=uigetfile('*.xls','Select .xls file to guide detector');
-    if isequal(infile,0)
-        disp('Cancel button pushed');
-        return
-    end
 
-    %  inpath = 'C:\Users\Karlina.Merkens\Documents\Kogia\AnalysisLogs';
-    %  infile = 'SAIPAN06_ksp_kpm_170316_manuaANDdetectorfordetec.xls';
-
-    %read the file into 3 matrices-- numeric, text, and raw cell array
-    [num, txt, raw] = xlsread([inpath '\' infile]);
-    %error check
-    [~,y]=size(num);
-    if y < 2;          %start and end dates not formatted as numbers
-        h=errordlg('Please save dates in number format and click ok');
-        uiwait(h)
-        [num, txt, raw] = xlsread([inpath '\' infile]); %reread file
-    end  
-    excelDates = num(:,1:2);                %numeric array contains datenums
-    %convert excel datenums to matlab datenums (different pivot year)
-    matlabDates = ones(size(excelDates)).*datenum('30-Dec-1899') ...
-        + excelDates;
-
-    %Use other code to do the plotting and get the medians.
-    %rename things
-    encounterTimes = matlabDates;
-    clickTimes = clickDnum;
-    guideDetector = 1;
-    ppSignal = ppSignalcon;
-    durClick = durClickcon;
-    bw3db = bw3dbcon; 
-%     bw10db = bw10dbcon; 
-    specClickTf = specClickTfcon;
-    specNoiseTf = specNoiseTfcon;
-    ndur95 = ndur95con; 
-    peakFr = peakFrcon;
-    nDur = nDurcon;
-    yFilt = yFiltcon;
-    f = fsaved;
-    GraphDir = [inDir,'\matlab_graphs'];
-    %GraphDir = 'D:\metadata\matlab_graphs';
-
-    [medianValues,meanSpecClicks,meanSpecNoises,iciEncs,clickTimesconP,...
-        durClickconP, ndur95conP, bw3dbconP, nDurconP, peakFrconP, ppSignalconP,...
-        specClickTfconP,specNoiseTfconP, yFiltconP] = plotClickEncounters_posthoc_150310(encounterTimes,...
-        clickTimes,ppSignal,durClick,ndur95,bw3db,...
-        specClickTf,specNoiseTf,peakFr,nDur,yFilt,hdr,GraphDir,f);
-
-    %Change the name on the pruned parameters
-    clickDnum = clickTimesconP;
-    durClickcon = durClickconP;
-    bw3dbcon = bw3dbconP;
-%     bw10dbcon = bw10dbconP;
-    nDurcon = nDurconP;
-    ndur95con = ndur95conP;
-    peakFrcon = peakFrconP;
-    ppSignalcon = ppSignalconP;
-    specClickTfcon = specClickTfconP;
-    specNoiseTfcon = specNoiseTfconP;
-    yFiltcon = yFiltconP;
-
-    % Then save everything - use this one if there's a guided detector. 
+    %Then save everything - use this one if there's no guided detector. 
     save([inDir,'\',choppedDir{4},'_ClicksOnlyConcat',filedate,'.mat'],...
         'clickDnum','durClickcon','ndur95con','bw3dbcon',...
         'nDurcon', 'peakFrcon','ppSignalcon',...
-        'specClickTfcon','specNoiseTfcon','yFiltcon',...
-        'medianValues','meanSpecClicks','meanSpecNoises','iciEncs','f')
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-    % %Then save everything - use this one if there's no guided detector. 
-    % save([inDir,'\',choppedDir{4},'_ClicksOnlyConcat',filedate,'.mat'],...
-    %     'clickDnum','durClickcon','ndur95con','bw3dbcon',...
-    %     'nDurcon', 'peakFrcon','ppSignalcon',...
-    %     'specClickTfcon','specNoiseTfcon','yFiltcon','f')
-    % 
+        'specClickTfcon','specNoiseTfcon','yFiltcon','f')
+    
 
 end

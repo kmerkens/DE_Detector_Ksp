@@ -22,7 +22,7 @@ end
 fftWindow = hann(fftSize)';
 
 lowSpecIdx = round(p.bpRanges(1)/fs*fftSize)+1;
-highSpecIdx = round(p.bpRanges(2)/fs*fftSize)+1;
+highSpecIdx = floor(p.bpRanges(2)/fs*fftSize)+1;
 
 specRange = lowSpecIdx:highSpecIdx;
 binWidth_Hz = fs / fftSize;

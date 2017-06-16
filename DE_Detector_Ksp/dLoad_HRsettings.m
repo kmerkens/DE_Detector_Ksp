@@ -1,7 +1,7 @@
 function parametersHR = dLoad_HRsettings
 
 %%% Filter and FFT params %%
-parametersHR.bpRanges = [28000,99000]; % Bandpass filter params in Hz [min,max]
+parametersHR.bpRanges = [28000,99900]; % Bandpass filter params in Hz [min,max]
 parametersHR.frameLengthUs = 1200; % For fft computation
 parametersHR.overlap = .5; % FFT overlap (in decimal, not percent form)
 parametersHR.chan = 1; % which channel do you want to look at?
@@ -13,13 +13,14 @@ parametersHR.clipThreshold = .80;%  Normalized clipping threshold btwn 0 and 1. 
 %parametersHR.ppThresh = 100;% minimum  RL threshold - dB peak to peak.
 parametersHR.ppThresh = 50;% lowered with new filter 150629, 170420 lowered for kona23 from 80 to 50
 %parametersHR.ppThresh = 30; %Adjusted for having no tf.
-parametersHR.countThresh = 1000; % Keep consistent with Lo-res for predictability.
+% parametersHR.countThresh = 1000; % Keep consistent with Lo-res for predictability.
 % Can be higher than low res, but not lower!
 %170420 lowered from 20K to 1K for hawk 23
 % Keep count threshold less than equivalent pp threshold. 
 %   dBs = 10*log10(abs(fft(counts *2^14))) - 10*log10(fs/(length(fftWindow)))...
 %            + transfer function
 % note: array uses 2^15
+parametersHR.countThresh = 1200;%Up to 5K for HAWK 23 200 kHz not guided
 
 %%% Envelope params %%%
 parametersHR.energyThr = 0.3; % n-percent energy threshold for envelope duration

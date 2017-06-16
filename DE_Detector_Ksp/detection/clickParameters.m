@@ -466,6 +466,9 @@ for c = 1:size(clicks,1)
     else
         high3dB = f(highbin);
         lowbin = posMx-e3dB;
+        if isequal(lowbin, 0)
+            lowbin = 1;
+        end
         low3dB = f(lowbin);
         bw3 = high3dB-low3dB;
         

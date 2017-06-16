@@ -50,10 +50,11 @@ baseDir = 'D:\Hawaii_K_23_01\';
 % TODO: implement recursive directory search for more flexibility.
 %depl = 'GofMX_';
 depl = 'Haw';
+% depl = 'Test';
 
 
 % Set flags indicating which routines to run. 
-lowResDet = 0; %run short time detector.
+lowResDet = 1; %run short time detector.
 highResDet = 1; %run high res detector
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,7 +64,7 @@ inDisk = fileparts(baseDir(1:3));
 % Build list of (x)wav names in the base directory.
 % Right now only wav and xwav files are looked for.
 
-guideDetector =1; %1 if using xls sheet to guide detection, 0 to run on all files in drive
+guideDetector =0; %1 if using xls sheet to guide detection, 0 to run on all files in drive
 
 [detFiles,encounterTimes,GraphDir]= dFind_xwavs(baseDir,depl,guideDetector);
 
